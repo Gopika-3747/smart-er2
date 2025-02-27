@@ -12,9 +12,11 @@ app.use(cors());
 app.use(express.json());
 
 
-const mongoURI = process.env.MONGO_URI || 'mongodb://192.168.77.1:27017/smart-er';
+const mongoURI = process.env.MONGO_URI || 'mongodb+srv://shaheem2:Er9RHzQvT2Lhedzi@smart-er.s39qc.mongodb.net/smart-er?retryWrites=true&w=majority&appName=smart-er';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
+  .then(() => {console.log('Connected to MongoDB')
+    console.log('Database name:', mongoose.connection.name);
+  })
   .catch(err => console.error('MongoDB connection error:', err));
 
 

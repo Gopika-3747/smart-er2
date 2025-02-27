@@ -1,4 +1,4 @@
-// File: C:\Users\Shahe\Downloads\erapp\erapp\src\app\dashboard\page.js
+// File: C:\Users\Shahe\Downloads\smartER\smart-er2\src\app\dashboard\page.js
 import * as entry from '../../../../src/app/dashboard/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

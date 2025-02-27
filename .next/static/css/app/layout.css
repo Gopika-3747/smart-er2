@@ -1162,6 +1162,10 @@ export default Login;
   outline-offset: 2px;
 }
 
+.disabled\:opacity-50:disabled {
+  opacity: 0.5;
+}
+
 @media (min-width: 768px) {
   .md\:flex-\[1\.25\] {
     flex: 1.25;
