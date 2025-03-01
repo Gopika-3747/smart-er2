@@ -42,7 +42,6 @@ app.post('/api/login', async (req, res) => {
   const trimmedPassword = password.trim();
 
   try {
-    // Find the user in the database
     const user = await User.findOne({ userID: trimmedUserID });
     console.log('User found:', user);
 
@@ -50,7 +49,7 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Compare the provided password with the stored hash
+    
     const isMatch = await bcrypt.compare(trimmedPassword, user.password);
     console.log('Password match:', isMatch);
 
@@ -65,7 +64,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Register Endpoint
+
 app.post('/api/register', async (req, res) => {
   const { error } = loginSchema.validate(req.body);
   if (error) {
@@ -88,7 +87,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Start Server
+
 app.listen(PORT, HOST, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
 });
