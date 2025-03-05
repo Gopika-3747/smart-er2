@@ -1,4 +1,4 @@
-// File: C:\Users\Shahe\Downloads\smartER\smart-er2\src\app\page.js
+// File: C:\Users\gopik\OneDrive\Desktop\minor2\smart-er2\src\app\page.js
 import * as entry from '../../../src/app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

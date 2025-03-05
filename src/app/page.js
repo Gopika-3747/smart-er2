@@ -1,5 +1,9 @@
 'use client';
 
+import { IoMdKey } from "react-icons/io";
+import { FaUserCircle } from "react-icons/fa";
+
+
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -21,68 +25,19 @@ const Login = () => {
     setErrors({ ...errors, [name]: '' }); // Clear error on input change
   };
 
-  const handleLoginSubmit = async (e) => {
+  // Function to handle form submission
+  const handleLoginSubmit = (e) => {
     e.preventDefault();
-  
+
     // Validate form inputs
     const newErrors = {};
     if (!formData.userID) newErrors.userID = 'UserID is required.';
     if (!formData.password) newErrors.password = 'Password is required.';
-  
+
+    // Set errors if validation fails
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
-    }
-  
-    try {
-      // Send login request to the backend
-      const response = await fetch('http://192.168.77.1:5000/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        console.log('Login successful:', data);
-        alert('login succefull');
-        router.push('/dashboard');
-      } else {
-        console.error('Login failed:', data.message);
-        alert(data.message); // Show error message to the user
-      }
-    } catch (err) {
-      console.error('Error during login:', err);
-      alert('An error occurred. Please try again.');
-    }
-  };
-  
-  // For registration
-  const handleRegistration = async () => {
-    try {
-      const response = await fetch('http://192.168.77.1:5000/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        console.log('Registration successful:', data);
-        router.push('/dashboard');
-      } else {
-        console.error('Registration failed:', data.message);
-        alert(data.message); // Show error message to the user
-      }
-    } catch (err) {
-      console.error('Error during registration:', err);
-      alert('An error occurred. Please try again.');
     }
 
     
@@ -91,18 +46,22 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-[url('/bg-image.webp')] bg-cover bg-center">
+    <div className="flex flex-col md:flex-row h-screen">
       
       
-      <div className="flex flex-1 md:flex-[1.75] items-center justify-center p-6 md:p-10">
-        <div className="text-center">
-          <h1 className="text-4xl md:text-7xl font-bold text-gray-100 font-mono h-[20vh] w-[30vw] bg-[#706666] bg-opacity-50 rounded-md flex items-center justify-center">Smart-ER</h1>
+      <div className="flex flex-1 md:flex-[1.75] items-center justify-center p-6 md:p-10 bg-[#5d86b5] backdrop-blur-sm bg-opacity-75">
+        <div className="text-center bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f]
+ rounded-2xl py-[120px] px-[100px] backdrop-blur-md">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-wide drop-shadow-lg text-white rounded-md flex items-center justify-center ">Smart_ER</h1>
+          <p className="text-md text-gray-200 mt-2 font-light tracking-wide text-right">-Efficient Emergency Room Management
+    </p>
         </div>
       </div>
 
       {/* Login Form Section */}
-      <div className="flex flex-1 md:flex-[1.25] items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-lg bg-white p-10 rounded-2xl shadow-lg">
+     
+      <div className="flex flex-1 md:flex-[1.25] items-center justify-center p-6 md:p-10 bg-blue-100 bg-opacity-90 backdrop-blur-sm">
+        <div className="w-full max-w-lg bg-white p-10 rounded-2xl shadow-xl ">
           <h2 className="mt-5 flex justify-center text-center text-3xl font-mono font-bold text-blue-700 ">
             SYSTEM LOGIN
           </h2>
@@ -112,60 +71,62 @@ const Login = () => {
 
           <form onSubmit={handleLoginSubmit}>
             
-            <div className="flex flex-row flex-nowrap">
+            <div className={`mt-10 focus:border-b-blue-700 rounded-md hover:border-[#76bbce] bg-[#cbd5dd] border-b-2 justify-evenly flex flex-row flex-nowrap ${
+                  errors.userID ? 'border-red-500 mb-1' : 'border-[#6f6f71]'
+                }`}>
+            <FaUserCircle className="text-gray-700 pt-2.5 text-[1.8rem]" />
              <input
                 type="text"
                 name="userID"
                 value={formData.userID}
                 onChange={handleChange}
                 id="username"
-                className={`my-4 w-full px-2 py-2 border-b-2 placeholder-[#819ae4] placeholder:font-thin placeholder:text-[0.95rem] hover:border-[#76bbce] hover:bg-[#cbd5dd] focus:outline-none focus:border-b-blue-700 hover:rounded-md text-[#393b40] font-semibold ${
-                  errors.userID ? 'border-red-500' : 'border-[#6f6f71]'
-                }`}
+                className="my-2 w-[90%] bg-transparent placeholder:text-[#819ae4] placeholder:font-thin placeholder:text-[0.95rem] focus:outline-none text-[#323338] font-medium "
                 placeholder="Enter UserID"
-              />
+              /> 
             </div>
             {errors.userID && <p className="text-red-500 text-sm">{errors.userID}</p>}
 
-            <div>
+            <div className={`mt-8  focus:border-b-blue-700 rounded-md hover:border-[#76bbce] bg-[#cbd5dd] border-b-2 justify-evenly flex flex-row flex-nowrap ${
+                  errors.userID ? 'border-red-500 mb-1' : 'border-[#6f6f71]'
+                }`}>
+            <IoMdKey className="text-gray-700 pt-2.5 text-[2rem]" />
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 id="password"
-                className={`mt-3 w-full px-2 py-2 border-b-2 placeholder-[#819ae4] hover:border-[#76bbce] hover:rounded-md hover:bg-[#cbd5dd] focus:outline-none focus:border-b-blue-700 text-[#393b40] font-semibold placeholder:font-thin placeholder:text-[0.95rem] ${
-                  errors.password ? 'border-red-500' : 'border-[#6f6f71]'
-                }`}
+                className="my-2 w-[90%] bg-transparent placeholder:text-[#819ae4] placeholder:font-thin placeholder:text-[0.95rem] focus:outline-none text-[#323338] font-medium "
                 placeholder="Enter Password"
               />
             </div>
             {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
 
+            <div className="flex justify-center ">
             <button
               type="submit"
-              className="m-7 w-[80%] py-2 bg-blue-600 text-white rounded-full font-mono text-[1.2rem] shadow-md hover:bg-blue-700 transition"
+              className=" mt-9 mb-2 w-[40%] py-2 bg-blue-700 text-white rounded-md font-mono text-[1.2rem] shadow-md hover:bg-blue-700 transition"
             >
               LOGIN
-            </button>
+            </button></div>
           </form>
 
-          <div className="text-center">
+          <div className="flex justify-center items-center">
             <p className="text-sm text-gray-600">Not registered yet?</p>
-          </div>
-
-          <div className="w-full h-[5vh] text-center">
             <button
-              onClick={handleRegistration}
-              className="my-3 text-[1rem] text-blue-600 hover:text-blue-800 transition"
-              >
-              <span className="py-3 px-5 bg-blue-100 rounded-md hover:bg-blue-200 font-semibold">
+              onClick={() => router.push('/registration')}
+              className=" text-[1rem] text-blue-600 hover:text-blue-800 transition"
+            >
+              <span className="hover:underline ">
                 Create Account
               </span>
             </button>
           </div>
+
         </div>
       </div>
+      
     </div>
   );
 };
