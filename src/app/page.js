@@ -41,13 +41,13 @@ const Login = () => {
     }
   
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://0.0.0.0:5000';
-      console.log('API URL:', apiUrl); // Debugging: Log the API URL
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      console.log('API URL:', apiUrl); 
   
-      const response = await fetch(`http://0.0.0.0:5000/api/login`, {
+      const response = await fetch(`${apiUrl}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: formData.userID, password: formData.password }), // Use form data
+        body: JSON.stringify({ userID: formData.userID, password: formData.password }),
       });
   
       if (!response.ok) {
@@ -58,6 +58,8 @@ const Login = () => {
   
       const data = await response.json();
       console.log('Login successful:', data);
+      // After successful login
+      localStorage.setItem('isAuthenticated', 'true');
       router.push('/dashboard');
     } catch (err) {
       console.error('Error during login:', err);
@@ -91,7 +93,7 @@ const Login = () => {
                 name="userID"
                 value={formData.userID}
                 onChange={handleChange}
-                id="username"
+                id="userID"
                 className="my-2 w-[90%] bg-transparent placeholder:text-[#819ae4] placeholder:font-thin placeholder:text-[0.95rem] focus:outline-none text-[#323338] font-medium"
                 placeholder="Enter UserID"
                 aria-label="Enter UserID"

@@ -2,21 +2,35 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-
+import useAuth from '@/hooks/useAuth';
 
 const Dashboard = () => {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
 
   // Dummy logout function
   const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated'); // Clear authentication state
     alert('Logged out successfully!');
     router.push('/');
   };
 
+  // Show a loading spinner while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-2xl font-semibold text-blue-800">Loading...</div>
+      </div>
+    );
+  }
+
+  // Do not render the dashboard if not authenticated
+  if (!isAuthenticated) {
+    return null; // Return nothing or a redirect message
+  }
+
   return (
-    
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      
       {/* Navbar */}
       <header className="bg-blue-700 text-white py-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center px-6">
@@ -35,7 +49,6 @@ const Dashboard = () => {
         <h2 className="text-3xl font-semibold text-blue-800 mb-6">Welcome to the Dashboard!</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          
           {/* Dummy Cards */}
           {['Patients', 'Staff Management', 'Reports', 'Emergency Cases', 'Analytics', 'Settings'].map((item, index) => (
             <div key={index} className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition">

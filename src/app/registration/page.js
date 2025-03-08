@@ -12,7 +12,8 @@ const RegistrationPage = () => {
     lastName: '',
     email: '',
     role: '',
-    department: '',
+    password: '',
+    reenterPassword: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -39,7 +40,11 @@ const RegistrationPage = () => {
       newErrors.email = 'Invalid email address.';
     }
     if (!formData.role) newErrors.role = 'Role is required.';
-    if (!formData.department) newErrors.department = 'Department is required.';
+    if (!formData.password) newErrors.password = 'Password is required.';
+    if (!formData.reenterPassword) newErrors.reenterPassword = 'Please re-enter your password.';
+    if (formData.password !== formData.reenterPassword) {
+      newErrors.reenterPassword = 'Passwords do not match.';
+    }
 
     // Set errors if validation fails
     if (Object.keys(newErrors).length > 0) {
@@ -55,7 +60,13 @@ const RegistrationPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          role: formData.role,
+          password: formData.password,
+        }),
       });
 
       const data = await response.json();
@@ -143,16 +154,28 @@ const RegistrationPage = () => {
             {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
 
             <input
-              type="text"
-              name="department"
-              placeholder="Department"
-              value={formData.department}
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
               onChange={handleChange}
               className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.department ? 'border-red-500' : 'border-gray-300'
+                errors.password ? 'border-red-500' : 'border-gray-300'
               }`}
             />
-            {errors.department && <p className="text-red-500 text-sm">{errors.department}</p>}
+            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+
+            <input
+              type="password"
+              name="reenterPassword"
+              placeholder="Re-enter Password"
+              value={formData.reenterPassword}
+              onChange={handleChange}
+              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
+                errors.reenterPassword ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {errors.reenterPassword && <p className="text-red-500 text-sm">{errors.reenterPassword}</p>}
           </div>
 
           <button
