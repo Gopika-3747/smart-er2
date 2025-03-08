@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: 'http://192.168.77.1:3000', // Allow requests from the frontend
+  origin: '*', // Allow all origins
   credentials: true,
 }));
 app.use(express.json());
@@ -26,7 +26,14 @@ mongoose.connect(MONGODB_URI)
 // User Schema and Model
 const userSchema = new mongoose.Schema({
   userID: { type: String, required: true, unique: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  role: { type: String, required: true },
   password: { type: String, required: true },
+  hospitalName: { type: String, required: true }, // New field for hospital name
+  supervisorId: { type: String }, // Only required for Admin role
+  supervisorPassword: { type: String }, // Only required for Admin role
 });
 
 const User = mongoose.model('User', userSchema);
@@ -54,28 +61,66 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
+
+// Registration API
+// Registration API
 app.post('/api/register', async (req, res) => {
-  const { firstName, lastName, email, role, password } = req.body;
+  const { userID, firstName, lastName, email, role, password, hospitalName, supervisorId, supervisorPassword } = req.body;
 
   try {
-    // Check if the email already exists
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already exists' });
+    // Validate allowed roles
+    const allowedRoles = ['admin', 'doctor', 'nurse'];
+    if (!allowedRoles.includes(role.toLowerCase())) {
+      return res.status(400).json({ message: 'Invalid role. Allowed roles are Admin, Doctor, and Nurse.' });
     }
 
-    // Hash the password before saving it
-    const saltRounds = 10; // Number of salt rounds for bcrypt
+    // Check if the userID already exists
+    const existingUserID = await User.findOne({ userID });
+    if (existingUserID) {
+      return res.status(400).json({ message: 'User ID already exists.' });
+    }
+
+    // Check if the email already exists
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ message: 'Email already exists.' });
+    }
+
+    // Validate supervisor credentials for Admin role
+    if (role.toLowerCase() === 'admin') {
+      if (!supervisorId || !supervisorPassword) {
+        return res.status(400).json({ message: 'Supervisor ID and Password are required for Admin role.' });
+      }
+
+      // Check if the supervisor credentials are valid
+      const supervisor = await User.findOne({ userID: supervisorId, role: 'supervisor' });
+
+      if (!supervisor) {
+        return res.status(400).json({ message: 'Invalid Supervisor ID.' });
+      }
+
+      const isSupervisorPasswordValid = await bcrypt.compare(supervisorPassword, supervisor.password);
+
+      if (!isSupervisorPasswordValid) {
+        return res.status(400).json({ message: 'Invalid Supervisor Password.' });
+      }
+    }
+
+    // Hash the password
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Create a new user
     const newUser = new User({
+      userID,
       firstName,
       lastName,
       email,
       role,
       password: hashedPassword,
+      hospitalName, 
+      supervisorId: role.toLowerCase() === 'admin' ? supervisorId : null,
+      supervisorPassword: role.toLowerCase() === 'admin' ? await bcrypt.hash(supervisorPassword, saltRounds) : null,
     });
 
     await newUser.save();
@@ -85,8 +130,8 @@ app.post('/api/register', async (req, res) => {
     console.error('Error during registration:', err);
     res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
+  
 });
-// Start the server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });

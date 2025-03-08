@@ -8,30 +8,61 @@ const RegistrationPage = () => {
   
   // State to store form inputs, errors, and loading status
   const [formData, setFormData] = useState({
+    userID: '', // New field for userID
     firstName: '',
     lastName: '',
     email: '',
     role: '',
     password: '',
     reenterPassword: '',
+    hospitalName: '', // New field for hospital name
   });
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // State for supervisor credentials (admin role only)
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [supervisorCredentials, setSupervisorCredentials] = useState({
+    supervisorId: '',
+    supervisorPassword: '',
+  });
+  const [supervisorError, setSupervisorError] = useState('');
 
   // Function to handle input changes and update state
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     setErrors({ ...errors, [name]: '' }); // Clear error on input change
+
+    // Check if the role is "Admin"
+    if (name === 'role') {
+      setIsAdmin(value.toLowerCase() === 'admin');
+    }
   };
 
-  // Function to handle form submission
+  // Function to handle supervisor credentials input changes
+  const handleSupervisorChange = (e) => {
+    const { name, value } = e.target;
+    setSupervisorCredentials({ ...supervisorCredentials, [name]: value });
+    setSupervisorError('');
+  };
+
+  // Function to validate supervisor credentials
+  const validateSupervisorCredentials = () => {
+    if (!supervisorCredentials.supervisorId || !supervisorCredentials.supervisorPassword) {
+      setSupervisorError('Supervisor ID and Password are required.');
+      return false;
+    }
+    return true;
+  };
+
   const handleRegistrationSubmit = async (e) => {
     e.preventDefault();
-
+  
     // Validate form inputs
     const newErrors = {};
+    if (!formData.userID) newErrors.userID = 'User ID is required.';
     if (!formData.firstName) newErrors.firstName = 'First Name is required.';
     if (!formData.lastName) newErrors.lastName = 'Last Name is required.';
     if (!formData.email) {
@@ -40,18 +71,27 @@ const RegistrationPage = () => {
       newErrors.email = 'Invalid email address.';
     }
     if (!formData.role) newErrors.role = 'Role is required.';
+    else if (!['admin', 'doctor', 'nurse'].includes(formData.role.toLowerCase())) {
+      newErrors.role = 'Invalid role. Allowed roles are Admin, Doctor, and Nurse.'; // Validate allowed roles
+    }
+    if (!formData.hospitalName) newErrors.hospitalName = 'Hospital Name is required.'; // Validate hospital name
     if (!formData.password) newErrors.password = 'Password is required.';
     if (!formData.reenterPassword) newErrors.reenterPassword = 'Please re-enter your password.';
     if (formData.password !== formData.reenterPassword) {
       newErrors.reenterPassword = 'Passwords do not match.';
     }
-
+  
     // Set errors if validation fails
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
+  
+    // Validate supervisor credentials if role is "Admin"
+    if (isAdmin && !validateSupervisorCredentials()) {
+      return;
+    }
+  
     // Submit form data to the server
     setIsLoading(true);
     try {
@@ -61,16 +101,20 @@ const RegistrationPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          userID: formData.userID,
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
           role: formData.role,
           password: formData.password,
+          hospitalName: formData.hospitalName, // Include hospital name in the request
+          supervisorId: isAdmin ? supervisorCredentials.supervisorId : null,
+          supervisorPassword: isAdmin ? supervisorCredentials.supervisorPassword : null,
         }),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         alert('Registration request submitted successfully!');
         router.push('/'); // Redirect to login page
@@ -105,6 +149,19 @@ const RegistrationPage = () => {
         
         <form onSubmit={handleRegistrationSubmit}>
           <div className="flex flex-col gap-3">
+            {/* New User ID Field */}
+            <input
+              type="text"
+              name="userID"
+              placeholder="User ID"
+              value={formData.userID}
+              onChange={handleChange}
+              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
+                errors.userID ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {errors.userID && <p className="text-red-500 text-sm">{errors.userID}</p>}
+
             <input
               type="text"
               name="firstName"
@@ -144,7 +201,7 @@ const RegistrationPage = () => {
             <input
               type="text"
               name="role"
-              placeholder="Role (e.g., Doctor, Nurse)"
+              placeholder="Role (e.g., Doctor, Nurse, Admin)"
               value={formData.role}
               onChange={handleChange}
               className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
@@ -152,6 +209,19 @@ const RegistrationPage = () => {
               }`}
             />
             {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
+
+            {/* New Hospital Name Field */}
+            <input
+              type="text"
+              name="hospitalName"
+              placeholder="Hospital Name"
+              value={formData.hospitalName}
+              onChange={handleChange}
+              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
+                errors.hospitalName ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {errors.hospitalName && <p className="text-red-500 text-sm">{errors.hospitalName}</p>}
 
             <input
               type="password"
@@ -177,6 +247,30 @@ const RegistrationPage = () => {
             />
             {errors.reenterPassword && <p className="text-red-500 text-sm">{errors.reenterPassword}</p>}
           </div>
+
+          {/* Supervisor Credentials Modal for Admin Role */}
+          {isAdmin && (
+            <div className="mt-4 p-4 bg-gray-100 rounded-md">
+              <h3 className="text-lg font-semibold mb-2">Supervisor Credentials</h3>
+              <input
+                type="text"
+                name="supervisorId"
+                placeholder="Supervisor ID"
+                value={supervisorCredentials.supervisorId}
+                onChange={handleSupervisorChange}
+                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic mb-2"
+              />
+              <input
+                type="password"
+                name="supervisorPassword"
+                placeholder="Supervisor Password"
+                value={supervisorCredentials.supervisorPassword}
+                onChange={handleSupervisorChange}
+                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic"
+              />
+              {supervisorError && <p className="text-red-500 text-sm mt-2">{supervisorError}</p>}
+            </div>
+          )}
 
           <button
             type="submit"
