@@ -1,167 +1,154 @@
 'use client';
 
+import { IoMdKey } from "react-icons/io";
+import { FaUserCircle, FaEye, FaEyeSlash } from "react-icons/fa";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const Login = () => {
   const router = useRouter();
-
-  // State to store form inputs and errors
   const [formData, setFormData] = useState({
     userID: '',
     password: '',
   });
-
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Function to handle input changes and update state
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: '' }); // Clear error on input change
+    setErrors({ ...errors, [name]: '' });
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
   
-    // Validate form inputs
     const newErrors = {};
-    if (!formData.userID) newErrors.userID = 'UserID is required.';
-    if (!formData.password) newErrors.password = 'Password is required.';
+    if (!formData.userID.trim()) newErrors.userID = 'UserID is required.';
+    if (!formData.password.trim()) newErrors.password = 'Password is required.';
+    if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters long.';
   
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setIsLoading(false);
       return;
     }
   
     try {
-      // Send login request to the backend
-      const response = await fetch('http://192.168.77.1:5000/api/login', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://0.0.0.0:5000';
+      console.log('API URL:', apiUrl); // Debugging: Log the API URL
+  
+      const response = await fetch(`http://0.0.0.0:5000/api/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: formData.userID, password: formData.password }), // Use form data
       });
   
-      const data = await response.json();
-  
-      if (response.ok) {
-        console.log('Login successful:', data);
-        alert('login succefull');
-        router.push('/dashboard');
-      } else {
-        console.error('Login failed:', data.message);
-        alert(data.message); // Show error message to the user
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server responded with an error:', errorData);
+        throw new Error(errorData.message || 'Login failed');
       }
+  
+      const data = await response.json();
+      console.log('Login successful:', data);
+      router.push('/dashboard');
     } catch (err) {
       console.error('Error during login:', err);
       alert('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-  };
-  
-  // For registration
-  const handleRegistration = async () => {
-    try {
-      const response = await fetch('http://192.168.77.1:5000/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        console.log('Registration successful:', data);
-        router.push('/dashboard');
-      } else {
-        console.error('Registration failed:', data.message);
-        alert(data.message); // Show error message to the user
-      }
-    } catch (err) {
-      console.error('Error during registration:', err);
-      alert('An error occurred. Please try again.');
-    }
-
-    
-    console.log('Login form submitted', formData);
-    router.push('/dashboard');
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-[url('/bg-image.webp')] bg-cover bg-center">
-      
-      
-      <div className="flex flex-1 md:flex-[1.75] items-center justify-center p-6 md:p-10">
-        <div className="text-center">
-          <h1 className="text-4xl md:text-7xl font-bold text-gray-100 font-mono h-[20vh] w-[30vw] bg-[#706666] bg-opacity-50 rounded-md flex items-center justify-center">Smart-ER</h1>
+    <div className="flex flex-col md:flex-row h-screen">
+      <div className="flex flex-1 md:flex-[1.75] items-center justify-center p-6 md:p-10 bg-[#5d86b5] backdrop-blur-sm bg-opacity-75">
+        <div className="text-center bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] rounded-2xl py-[120px] px-[100px] backdrop-blur-md">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-wide drop-shadow-lg text-white rounded-md flex items-center justify-center">Smart_ER</h1>
+          <p className="text-md text-gray-200 mt-2 font-light tracking-wide text-right">-Efficient Emergency Room Management</p>
         </div>
       </div>
 
-      {/* Login Form Section */}
-      <div className="flex flex-1 md:flex-[1.25] items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-lg bg-white p-10 rounded-2xl shadow-lg">
-          <h2 className="mt-5 flex justify-center text-center text-3xl font-mono font-bold text-blue-700 ">
-            SYSTEM LOGIN
-          </h2>
-          <p className="text-center text-sm mt-1 text-[#60ade0] mb-2">
-            <i>*For Authorized Medical Staff Only</i>
-          </p>
+      <div className="flex flex-1 md:flex-[1.25] items-center justify-center p-6 md:p-10 bg-blue-100 bg-opacity-90 backdrop-blur-sm">
+        <div className="w-full max-w-lg bg-white p-10 rounded-2xl shadow-xl">
+          <h2 className="mt-5 flex justify-center text-center text-3xl font-mono font-bold text-blue-700">SYSTEM LOGIN</h2>
+          <p className="text-center text-sm mt-1 text-[#60ade0] mb-2"><i>*For Authorized Medical Staff Only</i></p>
 
           <form onSubmit={handleLoginSubmit}>
-            
-            <div className="flex flex-row flex-nowrap">
-             <input
+            <div className={`mt-10 focus:border-b-blue-700 rounded-md hover:border-custom-blue bg-[#cbd5dd] border-b-2 justify-evenly flex flex-row flex-nowrap ${
+              errors.userID ? 'border-red-500 mb-1' : 'border-[#6f6f71]'
+            }`}>
+              <FaUserCircle className="text-gray-700 pt-2.5 text-[1.8rem]" />
+              <input
                 type="text"
                 name="userID"
                 value={formData.userID}
                 onChange={handleChange}
                 id="username"
-                className={`my-4 w-full px-2 py-2 border-b-2 placeholder-[#819ae4] placeholder:font-thin placeholder:text-[0.95rem] hover:border-[#76bbce] hover:bg-[#cbd5dd] focus:outline-none focus:border-b-blue-700 hover:rounded-md text-[#393b40] font-semibold ${
-                  errors.userID ? 'border-red-500' : 'border-[#6f6f71]'
-                }`}
+                className="my-2 w-[90%] bg-transparent placeholder:text-[#819ae4] placeholder:font-thin placeholder:text-[0.95rem] focus:outline-none text-[#323338] font-medium"
                 placeholder="Enter UserID"
+                aria-label="Enter UserID"
               />
             </div>
-            {errors.userID && <p className="text-red-500 text-sm">{errors.userID}</p>}
+            {errors.userID && <p className="text-red-500 text-sm" aria-live="polite">{errors.userID}</p>}
 
-            <div>
+            <div className={`mt-8 focus:border-b-blue-700 rounded-md hover:border-custom-blue bg-[#cbd5dd] border-b-2 justify-evenly flex flex-row flex-nowrap ${
+              errors.password ? 'border-red-500 mb-1' : 'border-[#6f6f71]'
+            }`}>
+              <IoMdKey className="text-gray-700 pt-2.5 text-[2rem]" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 id="password"
-                className={`mt-3 w-full px-2 py-2 border-b-2 placeholder-[#819ae4] hover:border-[#76bbce] hover:rounded-md hover:bg-[#cbd5dd] focus:outline-none focus:border-b-blue-700 text-[#393b40] font-semibold placeholder:font-thin placeholder:text-[0.95rem] ${
-                  errors.password ? 'border-red-500' : 'border-[#6f6f71]'
-                }`}
+                className="my-2 w-[80%] bg-transparent placeholder:text-[#819ae4] placeholder:font-thin placeholder:text-[0.95rem] focus:outline-none text-[#323338] font-medium"
                 placeholder="Enter Password"
+                aria-label="Enter Password"
               />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="text-gray-700 hover:text-blue-700"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
-            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+            {errors.password && <p className="text-red-500 text-sm" aria-live="polite">{errors.password}</p>}
 
-            <button
-              type="submit"
-              className="m-7 w-[80%] py-2 bg-blue-600 text-white rounded-full font-mono text-[1.2rem] shadow-md hover:bg-blue-700 transition"
-            >
-              LOGIN
-            </button>
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                className="mt-9 mb-2 w-[40%] py-2 bg-blue-700 text-white rounded-md font-mono text-[1.2rem] shadow-md hover:bg-blue-700 transition"
+                disabled={isLoading}
+                aria-disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex justify-center items-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  </div>
+                ) : (
+                  'LOGIN'
+                )}
+              </button>
+            </div>
           </form>
 
-          <div className="text-center">
+          <div className="flex justify-center items-center">
             <p className="text-sm text-gray-600">Not registered yet?</p>
-          </div>
-
-          <div className="w-full h-[5vh] text-center">
             <button
-              onClick={handleRegistration}
-              className="my-3 text-[1rem] text-blue-600 hover:text-blue-800 transition"
-              >
-              <span className="py-3 px-5 bg-blue-100 rounded-md hover:bg-blue-200 font-semibold">
-                Create Account
-              </span>
+              onClick={() => router.push('/registration')}
+              className="text-[1rem] text-blue-600 hover:text-blue-800 transition"
+            >
+              <span className="hover:underline">Create Account</span>
             </button>
           </div>
         </div>
