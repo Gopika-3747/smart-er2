@@ -58,7 +58,6 @@ const Login = () => {
   
       const data = await response.json();
       console.log('Login successful:', data);
-      // After successful login
       localStorage.setItem('isAuthenticated', 'true');
       router.push('/dashboard');
     } catch (err) {
