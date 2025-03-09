@@ -11,11 +11,11 @@ const useAuth = () => {
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('isAuthenticated');
     if (!isAuthenticated) {
-      router.push('/'); // Redirect to login page if not authenticated
+      router.push('/'); 
     } else {
-      setIsAuthenticated(true); // Allow rendering if authenticated
+      setIsAuthenticated(true); 
     }
-    setIsLoading(false); // Mark loading as complete
+    setIsLoading(false); 
   }, [router]);
 
   return { isAuthenticated, isLoading };

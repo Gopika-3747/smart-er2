@@ -8,14 +8,14 @@ const Dashboard = () => {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Dummy logout function
+  
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated'); // Clear authentication state
+    localStorage.removeItem('isAuthenticated'); 
     alert('Logged out successfully!');
     router.push('/');
   };
 
-  // Show a loading spinner while checking authentication
+  
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -24,9 +24,9 @@ const Dashboard = () => {
     );
   }
 
-  // Do not render the dashboard if not authenticated
+  
   if (!isAuthenticated) {
-    return null; // Return nothing or a redirect message
+    return null; 
   }
 
   return (

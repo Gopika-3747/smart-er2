@@ -9,21 +9,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+
 app.use(cors({
-  origin: '*', // Allow all origins
+  origin: '*', 
   credentials: true,
 }));
 app.use(express.json());
 
-// MongoDB Connection
+
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://shaheem2:Er9RHzQvT2Lhedzi@smart-er.s39qc.mongodb.net/smart-er?retryWrites=true&w=majority&appName=smart-er';
 
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch((err) => console.error('Error connecting to MongoDB:', err));
 
-// User Schema and Model
+
 const userSchema = new mongoose.Schema({
   userID: { type: String, required: true, unique: true },
   firstName: { type: String, required: true },
@@ -31,14 +31,13 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   role: { type: String, required: true },
   password: { type: String, required: true },
-  hospitalName: { type: String, required: true }, // New field for hospital name
-  supervisorId: { type: String }, // Only required for Admin role
-  supervisorPassword: { type: String }, // Only required for Admin role
+  hospitalName: { type: String, required: true },
+  supervisorId: { type: String }, 
+  supervisorPassword: { type: String }, 
 });
 
 const User = mongoose.model('User', userSchema);
 
-// Login API
 app.post('/api/login', async (req, res) => {
   const { userID, password } = req.body;
 
@@ -62,37 +61,35 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Registration API
-// Registration API
 app.post('/api/register', async (req, res) => {
   const { userID, firstName, lastName, email, role, password, hospitalName, supervisorId, supervisorPassword } = req.body;
 
   try {
-    // Validate allowed roles
+    
     const allowedRoles = ['admin', 'doctor', 'nurse'];
     if (!allowedRoles.includes(role.toLowerCase())) {
       return res.status(400).json({ message: 'Invalid role. Allowed roles are Admin, Doctor, and Nurse.' });
     }
 
-    // Check if the userID already exists
+    
     const existingUserID = await User.findOne({ userID });
     if (existingUserID) {
       return res.status(400).json({ message: 'User ID already exists.' });
     }
 
-    // Check if the email already exists
+    
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
       return res.status(400).json({ message: 'Email already exists.' });
     }
 
-    // Validate supervisor credentials for Admin role
+    
     if (role.toLowerCase() === 'admin') {
       if (!supervisorId || !supervisorPassword) {
         return res.status(400).json({ message: 'Supervisor ID and Password are required for Admin role.' });
       }
 
-      // Check if the supervisor credentials are valid
+      
       const supervisor = await User.findOne({ userID: supervisorId, role: 'supervisor' });
 
       if (!supervisor) {
@@ -106,11 +103,10 @@ app.post('/api/register', async (req, res) => {
       }
     }
 
-    // Hash the password
-    const saltRounds = 10;
+        const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create a new user
+    
     const newUser = new User({
       userID,
       firstName,

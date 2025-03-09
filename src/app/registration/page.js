@@ -6,22 +6,22 @@ import { useRouter } from 'next/navigation';
 const RegistrationPage = () => {
   const router = useRouter();
   
-  // State to store form inputs, errors, and loading status
+  
   const [formData, setFormData] = useState({
-    userID: '', // New field for userID
+    userID: '', 
     firstName: '',
     lastName: '',
     email: '',
     role: '',
     password: '',
     reenterPassword: '',
-    hospitalName: '', // New field for hospital name
+    hospitalName: '', 
   });
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // State for supervisor credentials (admin role only)
+  
   const [isAdmin, setIsAdmin] = useState(false);
   const [supervisorCredentials, setSupervisorCredentials] = useState({
     supervisorId: '',
@@ -29,26 +29,26 @@ const RegistrationPage = () => {
   });
   const [supervisorError, setSupervisorError] = useState('');
 
-  // Function to handle input changes and update state
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: '' }); // Clear error on input change
+    setErrors({ ...errors, [name]: '' }); 
 
-    // Check if the role is "Admin"
+    
     if (name === 'role') {
       setIsAdmin(value.toLowerCase() === 'admin');
     }
   };
 
-  // Function to handle supervisor credentials input changes
+  
   const handleSupervisorChange = (e) => {
     const { name, value } = e.target;
     setSupervisorCredentials({ ...supervisorCredentials, [name]: value });
     setSupervisorError('');
   };
 
-  // Function to validate supervisor credentials
+  
   const validateSupervisorCredentials = () => {
     if (!supervisorCredentials.supervisorId || !supervisorCredentials.supervisorPassword) {
       setSupervisorError('Supervisor ID and Password are required.');
@@ -60,7 +60,7 @@ const RegistrationPage = () => {
   const handleRegistrationSubmit = async (e) => {
     e.preventDefault();
   
-    // Validate form inputs
+    
     const newErrors = {};
     if (!formData.userID) newErrors.userID = 'User ID is required.';
     if (!formData.firstName) newErrors.firstName = 'First Name is required.';
@@ -72,27 +72,27 @@ const RegistrationPage = () => {
     }
     if (!formData.role) newErrors.role = 'Role is required.';
     else if (!['admin', 'doctor', 'nurse'].includes(formData.role.toLowerCase())) {
-      newErrors.role = 'Invalid role. Allowed roles are Admin, Doctor, and Nurse.'; // Validate allowed roles
-    }
-    if (!formData.hospitalName) newErrors.hospitalName = 'Hospital Name is required.'; // Validate hospital name
+      newErrors.role = 'Invalid role. Allowed roles are Admin, Doctor, and Nurse.'; 
+        }
+    if (!formData.hospitalName) newErrors.hospitalName = 'Hospital Name is required.'; 
     if (!formData.password) newErrors.password = 'Password is required.';
     if (!formData.reenterPassword) newErrors.reenterPassword = 'Please re-enter your password.';
     if (formData.password !== formData.reenterPassword) {
       newErrors.reenterPassword = 'Passwords do not match.';
     }
   
-    // Set errors if validation fails
+    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
   
-    // Validate supervisor credentials if role is "Admin"
+    
     if (isAdmin && !validateSupervisorCredentials()) {
       return;
     }
   
-    // Submit form data to the server
+    
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/register`, {
@@ -107,7 +107,7 @@ const RegistrationPage = () => {
           email: formData.email,
           role: formData.role,
           password: formData.password,
-          hospitalName: formData.hospitalName, // Include hospital name in the request
+          hospitalName: formData.hospitalName, 
           supervisorId: isAdmin ? supervisorCredentials.supervisorId : null,
           supervisorPassword: isAdmin ? supervisorCredentials.supervisorPassword : null,
         }),
@@ -117,7 +117,7 @@ const RegistrationPage = () => {
   
       if (response.ok) {
         alert('Registration request submitted successfully!');
-        router.push('/'); // Redirect to login page
+        router.push('/'); 
       } else {
         alert(data.message || 'Registration failed. Please try again.');
       }
