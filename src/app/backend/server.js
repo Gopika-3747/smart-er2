@@ -54,13 +54,16 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid password' });
     }
 
-    res.status(200).json({ message: 'Login successful', user });
+    res.status(200).json({ message: 'Login successful', user: {
+      hospitalName: user.hospitalName,
+    }, });
+    
+
   } catch (err) {
     console.error('Error during login:', err);
     res.status(500).json({ message: 'An error occurred. Please try again.' });
   }
 });
-
 app.post('/api/register', async (req, res) => {
   const { userID, firstName, lastName, email, role, password, hospitalName, supervisorId, supervisorPassword } = req.body;
 

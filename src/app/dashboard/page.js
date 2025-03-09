@@ -7,10 +7,13 @@ import useAuth from '@/hooks/useAuth';
 const Dashboard = () => {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
-
+  localStorage.getItem('userName') || 'User';
+  const hospitalName = localStorage.getItem('hospitalName') || 'Hospital';
+  
   
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated'); 
+    localStorage.removeItem('hospitalName');
     alert('Logged out successfully!');
     router.push('/');
   };
@@ -46,8 +49,9 @@ const Dashboard = () => {
       
       {/* Main Content */}
       <main className="flex-grow container mx-auto p-6">
-        <h2 className="text-3xl font-semibold text-blue-800 mb-6">Welcome to the Dashboard!</h2>
-
+        <div className="mb-6">
+        <h2 className="text-3xl font-semibold text-blue-800 mb-6">Welcome,{hospitalName}</h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Dummy Cards */}
           {['Patients', 'Staff Management', 'Reports', 'Emergency Cases', 'Analytics', 'Settings'].map((item, index) => (
