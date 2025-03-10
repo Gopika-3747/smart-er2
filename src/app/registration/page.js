@@ -6,31 +6,63 @@ import { useRouter } from 'next/navigation';
 const RegistrationPage = () => {
   const router = useRouter();
   
-  // State to store form inputs, errors, and loading status
+  
   const [formData, setFormData] = useState({
+    userID: '', 
     firstName: '',
     lastName: '',
     email: '',
     role: '',
-    department: '',
+    password: '',
+    reenterPassword: '',
+    hospitalName: '', 
   });
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Function to handle input changes and update state
+  
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [supervisorCredentials, setSupervisorCredentials] = useState({
+    supervisorId: '',
+    supervisorPassword: '',
+  });
+  const [supervisorError, setSupervisorError] = useState('');
+
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: '' }); // Clear error on input change
+    setErrors({ ...errors, [name]: '' }); 
+
+    
+    if (name === 'role') {
+      setIsAdmin(value.toLowerCase() === 'admin');
+    }
   };
 
-  // Function to handle form submission
+  
+  const handleSupervisorChange = (e) => {
+    const { name, value } = e.target;
+    setSupervisorCredentials({ ...supervisorCredentials, [name]: value });
+    setSupervisorError('');
+  };
+
+  
+  const validateSupervisorCredentials = () => {
+    if (!supervisorCredentials.supervisorId || !supervisorCredentials.supervisorPassword) {
+      setSupervisorError('Supervisor ID and Password are required.');
+      return false;
+    }
+    return true;
+  };
+
   const handleRegistrationSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate form inputs
+  
+    
     const newErrors = {};
+    if (!formData.userID) newErrors.userID = 'User ID is required.';
     if (!formData.firstName) newErrors.firstName = 'First Name is required.';
     if (!formData.lastName) newErrors.lastName = 'Last Name is required.';
     if (!formData.email) {
@@ -39,15 +71,28 @@ const RegistrationPage = () => {
       newErrors.email = 'Invalid email address.';
     }
     if (!formData.role) newErrors.role = 'Role is required.';
-    if (!formData.department) newErrors.department = 'Department is required.';
-
-    // Set errors if validation fails
+    else if (!['admin', 'doctor', 'nurse'].includes(formData.role.toLowerCase())) {
+      newErrors.role = 'Invalid role. Allowed roles are Admin, Doctor, and Nurse.'; 
+        }
+    if (!formData.hospitalName) newErrors.hospitalName = 'Hospital Name is required.'; 
+    if (!formData.password) newErrors.password = 'Password is required.';
+    if (!formData.reenterPassword) newErrors.reenterPassword = 'Please re-enter your password.';
+    if (formData.password !== formData.reenterPassword) {
+      newErrors.reenterPassword = 'Passwords do not match.';
+    }
+  
+    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
-    // Submit form data to the server
+  
+    
+    if (isAdmin && !validateSupervisorCredentials()) {
+      return;
+    }
+  
+    
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/register`, {
@@ -55,14 +100,24 @@ const RegistrationPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          userID: formData.userID,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          role: formData.role,
+          password: formData.password,
+          hospitalName: formData.hospitalName, 
+          supervisorId: isAdmin ? supervisorCredentials.supervisorId : null,
+          supervisorPassword: isAdmin ? supervisorCredentials.supervisorPassword : null,
+        }),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         alert('Registration request submitted successfully!');
-        router.push('/'); // Redirect to login page
+        router.push('/'); 
       } else {
         alert(data.message || 'Registration failed. Please try again.');
       }
@@ -94,6 +149,19 @@ const RegistrationPage = () => {
         
         <form onSubmit={handleRegistrationSubmit}>
           <div className="flex flex-col gap-3">
+            {/* New User ID Field */}
+            <input
+              type="text"
+              name="userID"
+              placeholder="User ID"
+              value={formData.userID}
+              onChange={handleChange}
+              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
+                errors.userID ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {errors.userID && <p className="text-red-500 text-sm">{errors.userID}</p>}
+
             <input
               type="text"
               name="firstName"
@@ -133,7 +201,7 @@ const RegistrationPage = () => {
             <input
               type="text"
               name="role"
-              placeholder="Role (e.g., Doctor, Nurse)"
+              placeholder="Role (e.g., Doctor, Nurse, Admin)"
               value={formData.role}
               onChange={handleChange}
               className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
@@ -142,18 +210,67 @@ const RegistrationPage = () => {
             />
             {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
 
+            {/* New Hospital Name Field */}
             <input
               type="text"
-              name="department"
-              placeholder="Department"
-              value={formData.department}
+              name="hospitalName"
+              placeholder="Hospital Name"
+              value={formData.hospitalName}
               onChange={handleChange}
               className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.department ? 'border-red-500' : 'border-gray-300'
+                errors.hospitalName ? 'border-red-500' : 'border-gray-300'
               }`}
             />
-            {errors.department && <p className="text-red-500 text-sm">{errors.department}</p>}
+            {errors.hospitalName && <p className="text-red-500 text-sm">{errors.hospitalName}</p>}
+
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
+                errors.password ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+
+            <input
+              type="password"
+              name="reenterPassword"
+              placeholder="Re-enter Password"
+              value={formData.reenterPassword}
+              onChange={handleChange}
+              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
+                errors.reenterPassword ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {errors.reenterPassword && <p className="text-red-500 text-sm">{errors.reenterPassword}</p>}
           </div>
+
+          {/* Supervisor Credentials Modal for Admin Role */}
+          {isAdmin && (
+            <div className="mt-4 p-4 bg-gray-100 rounded-md">
+              <h3 className="text-lg font-semibold mb-2">Supervisor Credentials</h3>
+              <input
+                type="text"
+                name="supervisorId"
+                placeholder="Supervisor ID"
+                value={supervisorCredentials.supervisorId}
+                onChange={handleSupervisorChange}
+                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic mb-2"
+              />
+              <input
+                type="password"
+                name="supervisorPassword"
+                placeholder="Supervisor Password"
+                value={supervisorCredentials.supervisorPassword}
+                onChange={handleSupervisorChange}
+                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic"
+              />
+              {supervisorError && <p className="text-red-500 text-sm mt-2">{supervisorError}</p>}
+            </div>
+          )}
 
           <button
             type="submit"
