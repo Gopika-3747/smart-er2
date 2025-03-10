@@ -12,9 +12,20 @@
       "static/chunks/app/page.js"
     ],
     "/dashboard/page": [
+<<<<<<< HEAD
+=======
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/page.js"
+<<<<<<< HEAD
+=======
+    ],
+    "/registration/page": [
+>>>>>>> e49e089f91bdfcaf9a9b97bf0275b9e9f8845296
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/page.js"
+>>>>>>> 226054a7429a0eaa58a3fdd7215e529a2e99f664
     ]
   }
 }
