@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { FaCircleUser } from "react-icons/fa6";
 
 const RegistrationPage = () => {
   const router = useRouter();
@@ -131,36 +132,33 @@ const RegistrationPage = () => {
 
   return (
     <div 
-      className="flex items-center justify-center min-h-screen bg-cover bg-center" 
-      style={{ backgroundImage: "url('/bg-image.webp')" }}
+      className="flex items-center justify-center min-h-screen bg-cover bg-center bg-[#5d86b5] bg-opacity-60 backdrop-blur-sm"
     >
-      <div className="mb-5 mt-20 w-full max-w-md p-8 bg-white/90 rounded-2xl shadow-2xl backdrop-blur-md">
+      <div className="mb-5 mt-[7vh] w-full max-w-md p-8 bg-[#245370] backdrop-blur-sm bg-opacity-75 rounded-2xl shadow-2xl ">
         
-        <div className="mt-[-70px] m-auto h-[6rem] w-[6rem] text-center text-[1.9rem] mb-6 rounded-full border-2 border-black shadow-md bg-slate-300">
-          <i className="fa-solid fa-user text-black text-[240%] pt-1"></i>
+        <div className="mt-[-70px] m-auto h-[6rem] w-[6rem] text-center rounded-full shadow-md bg-slate-300">
+          <FaCircleUser className="text-gray-800 text-[6rem]"/>
         </div>
 
-        <h2 className="text-2xl font-bold text-blue-700 mb-3 text-center font-mono">
-          REGISTRATION REQUEST
+        <h2 className="text-[1.3rem] font-bold text-gray-100 mb-3 text-center font-sans">
+          REGISTRATION
         </h2>
-        <p className="text-sm text-gray-500 mb-6 text-center">
+        <p className="text-sm text-gray-300 text-center">
           Please fill out the form below to request an account. Only authorized medical staff will be approved.
         </p>
         
         <form onSubmit={handleRegistrationSubmit}>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col">
             {/* New User ID Field */}
+            
             <input
               type="text"
               name="userID"
               placeholder="User ID"
               value={formData.userID}
               onChange={handleChange}
-              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.userID ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.userID && <p className="text-red-500 text-sm">{errors.userID}</p>}
+              className={`register ${errors.userID ? 'border-red-900' : 'border-gray-400'}`}/>
+            {errors.userID && <p className="text-red-900 text-sm">{errors.userID}</p>}
 
             <input
               type="text"
@@ -168,11 +166,9 @@ const RegistrationPage = () => {
               placeholder="First Name"
               value={formData.firstName}
               onChange={handleChange}
-              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.firstName ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`register ${errors.firstName ? 'border-red-900' : 'border-gray-300'}`}
             />
-            {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
+            {errors.firstName && <p className="text-red-900 text-sm">{errors.firstName}</p>}
 
             <input
               type="text"
@@ -180,11 +176,9 @@ const RegistrationPage = () => {
               placeholder="Last Name"
               value={formData.lastName}
               onChange={handleChange}
-              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.lastName ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`register ${errors.lastName ? 'border-red-900' : 'border-gray-300'}`}
             />
-            {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+            {errors.lastName && <p className="text-red-900 text-sm">{errors.lastName}</p>}
 
             <input
               type="email"
@@ -192,11 +186,9 @@ const RegistrationPage = () => {
               placeholder="Email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`register ${errors.email ? 'border-red-900' : 'border-gray-300'}`}
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            {errors.email && <p className="text-red-900 text-sm">{errors.email}</p>}
 
             <input
               type="text"
@@ -204,11 +196,9 @@ const RegistrationPage = () => {
               placeholder="Role (e.g., Doctor, Nurse, Admin)"
               value={formData.role}
               onChange={handleChange}
-              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.role ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`register ${errors.role ? 'border-red-900' : 'border-gray-300'}`}
             />
-            {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
+            {errors.role && <p className="text-red-900 text-sm">{errors.role}</p>}
 
             {/* New Hospital Name Field */}
             <input
@@ -217,11 +207,11 @@ const RegistrationPage = () => {
               placeholder="Hospital Name"
               value={formData.hospitalName}
               onChange={handleChange}
-              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.hospitalName ? 'border-red-500' : 'border-gray-300'
+              className={`register ${
+                errors.hospitalName ? 'border-red-900' : 'border-gray-300'
               }`}
             />
-            {errors.hospitalName && <p className="text-red-500 text-sm">{errors.hospitalName}</p>}
+            {errors.hospitalName && <p className="text-red-900 text-sm">{errors.hospitalName}</p>}
 
             <input
               type="password"
@@ -229,11 +219,11 @@ const RegistrationPage = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
+              className={`register ${
+                errors.password ? 'border-red-900' : 'border-gray-300'
               }`}
             />
-            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+            {errors.password && <p className="text-red-900 text-sm">{errors.password}</p>}
 
             <input
               type="password"
@@ -241,24 +231,24 @@ const RegistrationPage = () => {
               placeholder="Re-enter Password"
               value={formData.reenterPassword}
               onChange={handleChange}
-              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
-                errors.reenterPassword ? 'border-red-500' : 'border-gray-300'
+              className={`register ${
+                errors.reenterPassword ? 'border-red-900' : 'border-gray-300'
               }`}
             />
-            {errors.reenterPassword && <p className="text-red-500 text-sm">{errors.reenterPassword}</p>}
+            {errors.reenterPassword && <p className="text-red-900 text-sm">{errors.reenterPassword}</p>}
           </div>
 
           {/* Supervisor Credentials Modal for Admin Role */}
           {isAdmin && (
-            <div className="mt-4 p-4 bg-gray-100 rounded-md">
-              <h3 className="text-lg font-semibold mb-2">Supervisor Credentials</h3>
+            <div className="mt-4 p-4 bg-gray-100 rounded-xl">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Supervisor Credentials</h3>
               <input
                 type="text"
                 name="supervisorId"
                 placeholder="Supervisor ID"
                 value={supervisorCredentials.supervisorId}
                 onChange={handleSupervisorChange}
-                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic mb-2"
+                className="register"
               />
               <input
                 type="password"
@@ -266,25 +256,27 @@ const RegistrationPage = () => {
                 placeholder="Supervisor Password"
                 value={supervisorCredentials.supervisorPassword}
                 onChange={handleSupervisorChange}
-                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic"
+                className="register"
               />
               {supervisorError && <p className="text-red-500 text-sm mt-2">{supervisorError}</p>}
             </div>
           )}
 
+          <div className='text-center mt-2'>
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-3 w-full py-3 font-semibold text-white bg-gradient-to-r from-green-400 to-green-600 rounded-md shadow-lg hover:bg-green-700 transition-all disabled:opacity-50"
+            className="mt-3 w-[60%] py-3 font-semibold text-white bg-gradient-to-r from-green-400 to-green-600 rounded-md shadow-lg hover:bg-green-700 transition-all disabled:opacity-50"
           >
             {isLoading ? 'Submitting...' : 'Request Registration'}
           </button>
+          </div>
         </form>
 
         <div className="mt-2 text-center">
           <button
             onClick={() => router.push('/')}
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-blue-100 hover:underline"
           >
             Back to Login
           </button>
