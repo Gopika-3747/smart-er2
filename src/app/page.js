@@ -59,8 +59,9 @@ const Login = () => {
       const data = await response.json();
       console.log('Login successful:', data);
       localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userName', data.user.name);
+      localStorage.setItem('userName', data.user.userName);
       localStorage.setItem('hospitalName', data.user.hospitalName)
+      localStorage.setItem('hospitalID', data.user.hospitalID)
       router.push('/dashboard');
     } catch (err) {
       console.error('Error during login:', err);

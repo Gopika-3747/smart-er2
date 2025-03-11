@@ -8,12 +8,16 @@ const Dashboard = () => {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
   localStorage.getItem('userName') || 'User';
+  const username = localStorage.getItem('userName') || 'User';
   const hospitalName = localStorage.getItem('hospitalName') || 'Hospital';
+  const hospitalID = localStorage.getItem('hospitalID') || 'Hospital';
   
   
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated'); 
+    localStorage.removeItem('username');
     localStorage.removeItem('hospitalName');
+    localStorage.removeItem('hospitalID');
     alert('Logged out successfully!');
     router.push('/');
   };
@@ -50,7 +54,15 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="flex-grow container mx-auto p-6">
         <div className="mb-6">
-        <h2 className="text-3xl font-semibold text-blue-800 mb-6">Welcome,{hospitalName}</h2>
+        <h2 className="text-3xl font-semibold text-blue-800 mb-6">Welcome,{username}</h2>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+            <p className="text-lg text-gray-700">
+              <span className="font-semibold">Hospital Name:</span> {hospitalName}
+            </p>
+            <p className="text-lg text-gray-700">
+              <span className="font-semibold">Hospital ID:</span> {hospitalID}
+            </p>
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Dummy Cards */}

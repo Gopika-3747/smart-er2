@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
   role: { type: String, required: true },
   password: { type: String, required: true },
   hospitalName: { type: String, required: true },
+  hospitalID:{ type: String, required: true, unique: true },
   supervisorId: { type: String }, 
   supervisorPassword: { type: String }, 
 });
@@ -54,9 +55,14 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid password' });
     }
 
-    res.status(200).json({ message: 'Login successful', user: {
-      hospitalName: user.hospitalName,
-    }, });
+    res.status(200).json({ 
+      message: 'Login successful', 
+      user: {
+        userName: `${user.firstName} ${user.lastName}`, 
+        hospitalName: user.hospitalName,
+        hospitalID: user.hospitalID,
+      }, 
+    });
     
 
   } catch (err) {
@@ -65,7 +71,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 app.post('/api/register', async (req, res) => {
-  const { userID, firstName, lastName, email, role, password, hospitalName, supervisorId, supervisorPassword } = req.body;
+  const { userID, firstName, lastName, email, role, password, hospitalName,hospitalID, supervisorId, supervisorPassword } = req.body;
 
   try {
     
@@ -118,6 +124,7 @@ app.post('/api/register', async (req, res) => {
       role,
       password: hashedPassword,
       hospitalName, 
+      hospitalID,
       supervisorId: role.toLowerCase() === 'admin' ? supervisorId : null,
       supervisorPassword: role.toLowerCase() === 'admin' ? await bcrypt.hash(supervisorPassword, saltRounds) : null,
     });
