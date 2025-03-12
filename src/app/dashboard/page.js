@@ -27,7 +27,7 @@ const Dashboard = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-2xl font-semibold text-blue-800">Loading...</div>
+        <div className="text-2xl font-semibold text-[#245370]">Loading...</div>
       </div>
     );
   }
@@ -38,26 +38,35 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-opacity-50 backdrop-blur-sm bg-blue-100">
 
-     {/* Top Navbar */}
-    <div>
-     <Navbar/>
-    </div>
-
-     <div className='flex m-3'> 
+     <div className='flex'> 
       <Sidebar />
       
       {/* Main Section */}
       <div className="flex-1 flex flex-col">
-      <div className="bg-yellow-300 text-white p-4 flex justify-evenly rounded-bl-lg rounded-br-lg">
-          {['Current ER Patients', 'Bed Availability', 'ER Status', 'Staff Availability'].map((item, index) => (
-            <button
-              key={index}
-              className="border border-white px-4 py-2 rounded-md bg-opacity-20 hover:bg-opacity-40 transition"
-            >
-              {item}
-            </button>
-          ))}
-        </div>
+      <div>
+     <Navbar/>
+    </div>
+
+      <div>
+        <h2 className='text-gray-600 font-sans font-bold text-[2rem]'>ER Dashboard</h2>
+      </div>
+
+      <div className=" opacity-85 text-black p-8 flex justify-between mr-6 m-3">
+  {[
+    { name: 'Current ER Patients', value: '24', bg: 'bg-gray-300' },
+    { name: 'Bed Availability', value: '10', bg: 'bg-gray-300' },
+    { name: 'ER Status', value: 'Moderate', bg: 'bg-gray-300' },
+    { name: 'Staff Availability', value: 'High', bg: 'bg-gray-300' },
+  ].map((item, index) => (
+    <button
+      key={index}
+      className={`flex flex-col h-30 w-48 justify-between items-center p-8 rounded-2xl ${item.bg} transition-all duration-200 shadow-lg border-x-2 border-y-8 border-red-800 bg-[#fff9ac] backdrop-blur-xl `}
+    >
+      <span className="text-[1.1rem] font-medium">{item.name}</span>
+      <span className="text-lg font-bold">{item.value}</span>
+    </button>
+  ))}
+</div>
 
         {/* Main Content */}
         <div className="p-6 grid grid-cols-3 gap-4">
