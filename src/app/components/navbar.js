@@ -46,7 +46,7 @@ const Navbar = () => {
         <div className="h-[15vh] flex justify-between items-center px-6 bg-[#5d86b5] mr-3 my-3 bg-opacity-75 rounded-lg shadow-2xl">
 
 <div className="text-cyan-50 text-[1.4rem] font-sans font-semibold">
-        Welcome to {hospitalName} - Successfully Logged In
+        Welcome to {hospitalName},{} - Successfully Logged In
       </div>
 
       {/* Right - Profile Dropdown */}

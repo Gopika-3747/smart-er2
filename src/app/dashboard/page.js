@@ -7,22 +7,7 @@ import Sidebar from '../components/sidebar';
 import Navbar from '../components/navbar';
 
 const Dashboard = () => {
-  const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
-  localStorage.getItem('userName') || 'User';
-  const username = localStorage.getItem('userName') || 'User';
-  const hospitalName = localStorage.getItem('hospitalName') || 'Hospital';
-  const hospitalID = localStorage.getItem('hospitalID') || 'Hospital';
-  
-  
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated'); 
-    localStorage.removeItem('username');
-    localStorage.removeItem('hospitalName');
-    localStorage.removeItem('hospitalID');
-    alert('Logged out successfully!');
-    router.push('/');
-  };
+ 
 
   
   if (isLoading) {

@@ -57,9 +57,34 @@ const RegistrationPage = () => {
     }
     return true;
   };
+  const verifyCredentials = async (role, credentials) => {
+    try {
+      const endpoint = role.toLowerCase() === 'admin' 
+        ? `${'http://localhost:5000'}}/api/verify-supervisor` 
+        : `${'http://localhost:5000'}/api/verify-admin`;
+  
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: role.toLowerCase() === 'admin' ? credentials.supervisorId : credentials.adminId,
+          password: role.toLowerCase() === 'admin' ? credentials.supervisorPassword : credentials.adminPassword,
+        }),
+      });
+  
+      const data = await response.json();
+      return data.isValid; 
+    } catch (err) {
+      console.error('Error verifying credentials:', err);
+      return false;
+    }
+  };
 
   const handleRegistrationSubmit = async (e) => {
     e.preventDefault();
+  
   
     const newErrors = {};
     if (!formData.userID) newErrors.userID = 'User ID is required.';
@@ -72,9 +97,9 @@ const RegistrationPage = () => {
     }
     if (!formData.role) newErrors.role = 'Role is required.';
     else if (!['admin', 'doctor', 'nurse'].includes(formData.role.toLowerCase())) {
-      newErrors.role = 'Invalid role. Allowed roles are Admin, Doctor, and Nurse.'; 
+      newErrors.role = 'Invalid role. Allowed roles are Admin, Doctor, and Nurse.';
     }
-    if (!formData.hospitalName) newErrors.hospitalName = 'Hospital Name is required.'; 
+    if (!formData.hospitalName) newErrors.hospitalName = 'Hospital Name is required.';
     if (!formData.hospitalID) newErrors.hospitalID = 'Hospital ID is required.';
     if (!formData.password) newErrors.password = 'Password is required.';
     if (!formData.reenterPassword) newErrors.reenterPassword = 'Please re-enter your password.';
@@ -87,12 +112,21 @@ const RegistrationPage = () => {
       return;
     }
   
+    
     if (!validateCredentials()) {
       return;
     }
   
+    
     setIsLoading(true);
     try {
+      const isValid = await verifyCredentials(formData.role, credentials);
+      if (!isValid) {
+        setCredentialError('Invalid credentials. Please check your Supervisor/Admin ID and Password.');
+        return;
+      }
+  
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/register`, {
         method: 'POST',
         headers: {
@@ -105,8 +139,8 @@ const RegistrationPage = () => {
           email: formData.email,
           role: formData.role,
           password: formData.password,
-          hospitalName: formData.hospitalName, 
-          hospitalID:formData.hospitalID,
+          hospitalName: formData.hospitalName,
+          hospitalID: formData.hospitalID,
           supervisorId: formData.role.toLowerCase() === 'admin' ? credentials.supervisorId : null,
           supervisorPassword: formData.role.toLowerCase() === 'admin' ? credentials.supervisorPassword : null,
           adminId: formData.role.toLowerCase() !== 'admin' ? credentials.adminId : null,
@@ -118,7 +152,7 @@ const RegistrationPage = () => {
   
       if (response.ok) {
         alert('Registration request submitted successfully!');
-        router.push('/'); 
+        router.push('/');
       } else {
         alert(data.message || 'Registration failed. Please try again.');
       }
