@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
+import Sidebar from '../components/sidebar';
+import Navbar from '../components/navbar';
 
 const Dashboard = () => {
   const router = useRouter();
@@ -30,59 +32,71 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  
   if (!isAuthenticated) {
     return null; 
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Navbar */}
-      <header className="bg-blue-700 text-white py-4 shadow-md">
-        <div className="container mx-auto flex justify-between items-center px-6">
-          <h1 className="text-2xl font-bold">ER Management Dashboard</h1>
-          <button 
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md transition"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-opacity-50 backdrop-blur-sm bg-blue-100">
+
+     {/* Top Navbar */}
+    <div>
+     <Navbar/>
+    </div>
+
+     <div className='flex m-3'> 
+      <Sidebar />
       
-      {/* Main Content */}
-      <main className="flex-grow container mx-auto p-6">
-        <div className="mb-6">
-        <h2 className="text-3xl font-semibold text-blue-800 mb-6">Welcome,{username}</h2>
-        <div className="bg-white p-4 rounded-lg shadow-md">
-            <p className="text-lg text-gray-700">
-              <span className="font-semibold">Hospital Name:</span> {hospitalName}
-            </p>
-            <p className="text-lg text-gray-700">
-              <span className="font-semibold">Hospital ID:</span> {hospitalID}
-            </p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Dummy Cards */}
-          {['Patients', 'Staff Management', 'Reports', 'Emergency Cases', 'Analytics', 'Settings'].map((item, index) => (
-            <div key={index} className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition">
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">{item}</h3>
-              <p className="text-gray-500">
-                This section will provide details and management tools for {item.toLowerCase()}.
-              </p>
-            </div>
+      {/* Main Section */}
+      <div className="flex-1 flex flex-col">
+      <div className="bg-yellow-300 text-white p-4 flex justify-evenly rounded-bl-lg rounded-br-lg">
+          {['Current ER Patients', 'Bed Availability', 'ER Status', 'Staff Availability'].map((item, index) => (
+            <button
+              key={index}
+              className="border border-white px-4 py-2 rounded-md bg-opacity-20 hover:bg-opacity-40 transition"
+            >
+              {item}
+            </button>
           ))}
         </div>
-      </main>
-      
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-4">
-        <div className="container mx-auto text-center">
-          © {new Date().getFullYear()} ER Management Portal. All rights reserved.
+
+        {/* Main Content */}
+        <div className="p-6 grid grid-cols-3 gap-4">
+          {/* ER Trends */}
+          <div className="col-span-2 bg-white p-4 rounded-lg shadow-md">
+            <h2 className="text-blue-800 text-xl font-bold mb-4">ER TRENDS</h2>
+            <div className="h-[250px] bg-gray-200 rounded-lg flex items-center justify-center">
+              {/* Placeholder for Chart */}
+              <span className="text-gray-500">[Graph will be rendered here]</span>
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h2 className="text-blue-800 text-xl font-bold mb-4">Notifications</h2>
+            <div className="h-[250px] bg-gray-100 rounded-lg p-2">
+              <p className="text-gray-500 text-sm">
+                - No new notifications.
+              </p>
+            </div>
+          </div>
+
+          {/* Staff Scheduling */}
+          <div className="col-span-3 bg-white p-4 rounded-lg shadow-md mt-4">
+            <h2 className="text-blue-800 text-xl font-bold mb-4">Staff Scheduling</h2>
+            <div className="h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
+              {/* Placeholder for Scheduling */}
+              <span className="text-gray-500">[Staff schedule details]</span>
+            </div>
+          </div>
         </div>
-      </footer>
+        </div>
+
+      </div>
+       {/* Footer */}
+       <footer className="bg-gray-800 text-white text-center py-3">
+          © {new Date().getFullYear()} ER Management Portal. All rights reserved.
+        </footer>
     </div>
   );
 };

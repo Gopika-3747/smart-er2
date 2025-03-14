@@ -140,7 +140,7 @@ const Login = () => {
             <div className="flex justify-center">
               <button
                 type="submit"
-                className="mt-5 mb-2 w-[30%] py-2 bg-blue-700 text-white rounded-md font-semibold text-[1rem] shadow-md hover:bg-blue-700 transition"
+                className="mt-10 mb-2 w-[30%] py-2 bg-blue-700 text-white rounded-md font-semibold text-[1rem] shadow-md hover:bg-blue-700 transition"
                 disabled={isLoading}
                 aria-disabled={isLoading}
               >
