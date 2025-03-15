@@ -28,11 +28,12 @@ const Login = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrors({});
   
     const newErrors = {};
     if (!formData.userID.trim()) newErrors.userID = 'UserID is required.';
     if (!formData.password.trim()) newErrors.password = 'Password is required.';
-    if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters long.';
+    if (formData.password.length > 0 && formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters long.';
   
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -49,24 +50,32 @@ const Login = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userID: formData.userID, password: formData.password }),
       });
-  
+      
+      let errorData={};
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Server responded with an error:', errorData);
-        throw new Error(errorData.message || 'Login failed');
+        try {
+          errorData = await response.json();
+        }
+        catch(jsonError) {
+            errorData.message = "Invalid Login Credentials!";
+        }
+      setErrors({ general: errorData.message || 'Invalid Login Credentials!' });
+      setIsLoading(false);
+      return;;
       }
   
       const data = await response.json();
-      console.log('Login successful:', data);
+      alert('Login successful!');
       localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userName', data.user.name);
+      localStorage.setItem('userName', data.user.userName);
       localStorage.setItem('hospitalName', data.user.hospitalName)
+      localStorage.setItem('hospitalID', data.user.hospitalID)
       router.push('/dashboard');
     } catch (err) {
       console.error('Error during login:', err);
-      alert('An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+      setErrors({ general: 'Something went wrong! Please try again later.' });
+  } finally {
+    setIsLoading(false);
     }
   };
 
@@ -79,11 +88,12 @@ const Login = () => {
         </div>
       </div>
 
-      <div className="flex flex-1 md:flex-[1.25] items-center justify-center p-6 md:p-10 bg-blue-100 bg-opacity-90 backdrop-blur-sm">
+      <div className="flex flex-1 md:flex-[1.25] items-center justify-center p-6 md:p-10 bg-blue-100 bg-opacity-75 backdrop-blur-sm">
         <div className="w-full max-w-lg bg-white p-10 rounded-2xl shadow-xl">
-          <h2 className="mt-5 flex justify-center text-center text-3xl font-mono font-bold text-blue-700">SYSTEM LOGIN</h2>
+          <h2 className="mt-5 flex justify-center text-center text-2xl font-sans font-bold text-blue-700">SYSTEM LOGIN</h2>
           <p className="text-center text-sm mt-1 text-[#60ade0] mb-2"><i>*For Authorized Medical Staff Only</i></p>
 
+          
           <form onSubmit={handleLoginSubmit}>
             <div className={`mt-10 focus:border-b-blue-700 rounded-md hover:border-custom-blue bg-[#cbd5dd] border-b-2 justify-evenly flex flex-row flex-nowrap ${
               errors.userID ? 'border-red-500 mb-1' : 'border-[#6f6f71]'
@@ -95,7 +105,7 @@ const Login = () => {
                 value={formData.userID}
                 onChange={handleChange}
                 id="userID"
-                className="my-2 w-[90%] bg-transparent placeholder:text-[#819ae4] placeholder:font-thin placeholder:text-[0.95rem] focus:outline-none text-[#323338] font-medium"
+                className="my-2 w-[90%] pl-2 bg-transparent placeholder:text-[#819ae4] placeholder:font-thin placeholder:text-[0.95rem] focus:outline-none text-[#323338] font-medium"
                 placeholder="Enter UserID"
                 aria-label="Enter UserID"
               />
@@ -105,7 +115,7 @@ const Login = () => {
             <div className={`mt-8 focus:border-b-blue-700 rounded-md hover:border-custom-blue bg-[#cbd5dd] border-b-2 justify-evenly flex flex-row flex-nowrap ${
               errors.password ? 'border-red-500 mb-1' : 'border-[#6f6f71]'
             }`}>
-              <IoMdKey className="text-gray-700 pt-2.5 text-[2rem]" />
+              <IoMdKey className="text-gray-700 pt-2.5 text-[1.9rem]" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
@@ -126,11 +136,11 @@ const Login = () => {
               </button>
             </div>
             {errors.password && <p className="text-red-500 text-sm" aria-live="polite">{errors.password}</p>}
-
+            {errors.general && (<p className="text-red-500 text-sm text-left mt-2">{errors.general}</p>)}
             <div className="flex justify-center">
               <button
                 type="submit"
-                className="mt-9 mb-2 w-[40%] py-2 bg-blue-700 text-white rounded-md font-mono text-[1.2rem] shadow-md hover:bg-blue-700 transition"
+                className="mt-10 mb-2 w-[30%] py-2 bg-blue-700 text-white rounded-md font-semibold text-[1rem] shadow-md hover:bg-blue-700 transition"
                 disabled={isLoading}
                 aria-disabled={isLoading}
               >
@@ -143,8 +153,8 @@ const Login = () => {
                 )}
               </button>
             </div>
+            
           </form>
-
           <div className="flex justify-center items-center">
             <p className="text-sm text-gray-600">Not registered yet?</p>
             <button

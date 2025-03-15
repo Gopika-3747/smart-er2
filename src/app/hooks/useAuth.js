@@ -12,6 +12,7 @@ const useAuth = () => {
     const isAuthenticated = localStorage.getItem('isAuthenticated');
     if (!isAuthenticated) {
       router.push('/'); 
+      
     } else {
       setIsAuthenticated(true); 
     }
