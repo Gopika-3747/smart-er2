@@ -10,6 +10,7 @@ const Navbar = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('isAuthenticated'); 
+        localStorage.removeItem('username');
         localStorage.removeItem('hospitalName');
         alert('Logged out successfully!');
         router.push('/');

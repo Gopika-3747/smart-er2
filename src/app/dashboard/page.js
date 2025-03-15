@@ -7,9 +7,8 @@ import Sidebar from '../components/sidebar';
 import Navbar from '../components/navbar';
 
 const Dashboard = () => {
- 
-
-  
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
