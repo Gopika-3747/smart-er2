@@ -1,0 +1,5 @@
+,Patient_ID,Hospital_ID,Urban_Rural,Gender,Age,Blood_Group,Triage_Level,Factor,Entry_Date,Entry_Time,Leave_Date,Leave_Time
+0,P001,H003,Urban,Male,87,A-,Critical,Crime,2025-03-15,05:22,NULL,NULL
+2,P003,H001,Urban,Other,27,B+,Low,Epidemic,2025-03-15,18:07,NULL,NULL
+5,P006,H001,Rural,Other,29,A-,Medium,Lifestyle,2025-03-16,07:29,NULL,NULL
+9,P010,H003,Rural,Male,37,O-,High,Event,2025-03-16,05:57,NULL,NULL
