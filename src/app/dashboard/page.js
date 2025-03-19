@@ -38,10 +38,10 @@ const Dashboard = () => {
 
       <div className=" opacity-85 text-black p-8 flex justify-between mr-6 m-3">
   {[
-    { name: 'Current ER Patients', value: '24', bg: 'bg-gray-300' },
-    { name: 'Bed Availability', value: '10', bg: 'bg-gray-300' },
-    { name: 'ER Status', value: 'Moderate', bg: 'bg-gray-300' },
-    { name: 'Staff Availability', value: 'High', bg: 'bg-gray-300' },
+    { name: 'Current ER Patients', value: '24', bg: 'bg-gray-200' },
+    { name: 'Bed Availability', value: '10', bg: 'bg-gray-200' },
+    { name: 'ER Status', value: 'Moderate', bg: 'bg-gray-200' },
+    { name: 'Staff Availability', value: 'High', bg: 'bg-gray-200' },
   ].map((item, index) => (
     <button
       key={index}

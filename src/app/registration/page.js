@@ -182,7 +182,7 @@ const RegistrationPage = () => {
         </p>
         
         <form onSubmit={handleRegistrationSubmit}>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
             <input
               type="text"
               name="userID"
@@ -251,7 +251,7 @@ const RegistrationPage = () => {
               placeholder="Hospital ID"
               value={formData.hospitalID}
               onChange={handleChange}
-              className={`w-full p-3 border-2 rounded-md shadow-sm placeholder:italic ${
+              className={`register ${
                 errors.hospitalID ? 'border-red-500' : 'border-gray-300'
               }`}
             />
