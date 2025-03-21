@@ -1,11 +1,21 @@
+from flask import Flask, jsonify
 import pandas as pd
-import matplotlib.pyplot as plt
-import time
 from datetime import datetime, timedelta
+import threading
+import time
 
-def update_graph():
-    plt.ion()  # Turn on interactive mode for live updating
+app = Flask(__name__)
 
+# Global variable to store graph data
+graph_data = {
+    "time_labels": [],
+    "patient_counts": [],
+    "date_today": ""
+}
+
+# Function to update graph data
+def update_graph_data():
+    global graph_data
     while True:
         # Load dataset
         df = pd.read_csv("pat.csv")
@@ -57,26 +67,26 @@ def update_graph():
         # Convert minutes to time labels for the X-axis (HH:MM format)
         time_labels = [f"{t//60:02d}:{t%60:02d}" for t in time_intervals]
 
-        # Step 4: Plot the graph
-        plt.clf()  # Clear the previous plot
-        plt.plot(time_labels, patient_counts, linestyle="-", color="b", linewidth=2, marker="o", markersize=5)  # Consistent thickness
+        # Update global graph data
+        graph_data = {
+            "time_labels": time_labels,
+            "patient_counts": patient_counts,
+            "date_today": str(date_today)
+        }
 
-        # Labels and title
-        plt.xlabel("Time (HH:MM)", fontsize=12)
-        plt.ylabel("Number of Patients", fontsize=12)
-        plt.title(f"Patient Count Over Time - {date_today}", fontsize=14)
+        # Wait for 5 seconds before the next update
+        time.sleep(5)
 
-        # Ensure Y-axis has whole numbers (with a max of 20 for readability)
-        plt.yticks(range(0, max(max(patient_counts), 20) + 1))
+# Start the background thread
+thread = threading.Thread(target=update_graph_data)
+thread.daemon = True
+thread.start()
 
-        # X-axis: Show every 1-hour interval for readability
-        plt.xticks(time_labels[::2], rotation=90)
+# API endpoint to serve graph data
+@app.route('/graph-data', methods=['GET'])
+def get_graph_data():
+    return jsonify(graph_data)
 
-        # Grid for better readability
-        plt.grid(True, linestyle="--", alpha=0.5)
-
-        plt.draw()  # Redraw the updated plot
-        plt.pause(3)  # Pause for 3 seconds before the next update
-
-# Run the function
-update_graph()
+# Run the Flask app
+if __name__ == '__main__':
+    app.run(port=5001)
