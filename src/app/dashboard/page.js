@@ -107,43 +107,43 @@ const Dashboard = () => {
   };
 
   // Chart.js options
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
+ const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    title: {
+      display: true,
+      text: `Patient Count Over Time - ${new Date().toISOString().split('T')[0]}`,
+      font: { size: 16 },
+    },
+  },
+  scales: {
+    x: {
       title: {
         display: true,
-        text: `Patient Count Over Time - ${new Date().toISOString().split('T')[0]}`,
-        font: { size: 16 },
+        text: 'Time (Hours)',
       },
+      grid: { display: true },
     },
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Time (Hours)',
-        },
-        grid: { display: true },
+    y: {
+      title: {
+        display: true,
+        text: 'Patient Count',
       },
-      y: {
-        title: {
-          display: true,
-          text: 'Patient Count',
+      min: 0,  // Explicitly set the minimum value of the y-axis
+      max: 20, // Explicitly set the maximum value of the y-axis
+      ticks: {
+        stepSize: 2,  // Change stepSize to 2 for increments of 2
+        callback: (value) => {
+          if (value % 1 === 0) {  // Only display whole numbers
+            return value;
+          }
         },
-        min: 0,  // Explicitly set the minimum value of the y-axis
-        max: 20, // Explicitly set the maximum value of the y-axis
-        ticks: {
-          stepSize: 4,  // Ensure the scale increments by 1
-          callback: (value) => {
-            if (value % 1 === 0) {  // Only display whole numbers
-              return value;
-            }
-          },
-        },
-        grid: { display: true },
       },
+      grid: { display: true },
     },
-  };
+  },
+};
   
 
   return (
