@@ -1,11 +1,31 @@
+from flask import Flask, jsonify
 import pandas as pd
+from flask_cors import CORS
 
-data = pd.read_csv(r'C:\Users\g4gam\OneDrive\Desktop\smarter2\smart-er2\count\pat.csv')
+app = Flask(__name__)
+CORS(app) 
 
-data[['Leave_Date', 'Leave_Time']] = data[['Leave_Date', 'Leave_Time']].fillna('NULL')
+@app.route('/admitted-patients', methods=['GET'])
+def get_admitted_patients():
+    try:
+        # Load the CSV file
+        df = pd.read_csv("pat.csv")
 
-current_patients = data[(data['Leave_Date'] == 'NULL') & (data['Leave_Time'] == 'NULL')]
+        # Replace 'NULL' with NaN for easier filtering
+        df.replace("NULL", pd.NA, inplace=True)
 
-current_patients.to_csv(r'C:\Users\g4gam\OneDrive\Desktop\smarter2\smart-er2\count\list.csv', index=False)
+        # Filter patients who are still admitted
+        admitted_patients = df[df["Leave_Date"].isna() & df["Leave_Time"].isna()]
 
-print(current_patients)
+        # Get the number of admitted patients
+        num_admitted_patients = admitted_patients.shape[0]
+
+        # Return the result as JSON
+        return jsonify({"num_admitted_patients": num_admitted_patients})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+@app.route('/test', methods=['GET'])
+def test():
+    return jsonify({"message": "Hello from Flask!"})
+if __name__ == '__main__':
+    app.run(port=5002)  

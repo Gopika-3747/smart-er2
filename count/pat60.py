@@ -84,6 +84,7 @@ thread.start()
 def get_graph_data():
     return jsonify(graph_data)
 
+
 # Run the Flask app
 if __name__ == '__main__':
     app.run(port=5001)

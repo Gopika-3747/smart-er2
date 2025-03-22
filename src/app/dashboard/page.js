@@ -33,6 +33,13 @@ const Dashboard = () => {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
   const [graphData, setGraphData] = useState(null);
+  const [metrics, setMetrics] = useState({
+    currentPatients: 0,
+    maxbed:20, // Initialize with 0
+    bedAvailability: 0,
+    erStatus: 'Moderate',
+    staffAvailability: 'High',
+  });
 
   // Fetch graph data from the backend
   useEffect(() => {
@@ -48,7 +55,29 @@ const Dashboard = () => {
 
     fetchGraphData();
   }, []);
+  
 
+  useEffect(() => {
+    const fetchAdmittedPatients = async () => {
+      try {
+        const response = await fetch('http://localhost:5002/admitted-patients'); // Ensure this matches the backend port
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setMetrics((prevMetrics) => ({
+          ...prevMetrics,
+          currentPatients: data.num_admitted_patients,
+          bedAvailability: metrics.maxbed-data.num_admitted_patients,
+                    
+        }));
+      } catch (error) {
+        console.error('Error fetching admitted patients:', error);
+      }
+    };
+  
+    fetchAdmittedPatients();
+  }, []);
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -68,11 +97,11 @@ const Dashboard = () => {
       {
         label: 'Patient Count',
         data: graphData ? graphData.patient_counts : [],
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgb(15, 57, 223)',
+        backgroundColor: 'rgba(1, 23, 188, 0.2)',
         borderWidth: 2,
         pointRadius: 5,
-        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+        pointBackgroundColor: 'rgb(49, 9, 229)',
       },
     ],
   };
@@ -80,13 +109,12 @@ const Dashboard = () => {
   // Chart.js options
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'top',
-      },
       title: {
         display: true,
-        text: 'Hourly Patient Count',
+        text: `Patient Count Over Time - ${new Date().toISOString().split('T')[0]}`,
+        font: { size: 16 },
       },
     },
     scales: {
@@ -95,16 +123,28 @@ const Dashboard = () => {
           display: true,
           text: 'Time (Hours)',
         },
+        grid: { display: true },
       },
       y: {
         title: {
           display: true,
-          text: 'Number of Patients',
+          text: 'Patient Count',
         },
-        beginAtZero: true,
+        min: 0,  // Explicitly set the minimum value of the y-axis
+        max: 20, // Explicitly set the maximum value of the y-axis
+        ticks: {
+          stepSize: 4,  // Ensure the scale increments by 1
+          callback: (value) => {
+            if (value % 1 === 0) {  // Only display whole numbers
+              return value;
+            }
+          },
+        },
+        grid: { display: true },
       },
     },
   };
+  
 
   return (
     <div className="min-h-screen bg-opacity-50 backdrop-blur-sm bg-blue-100">
@@ -123,10 +163,10 @@ const Dashboard = () => {
 
           <div className="opacity-85 text-black p-8 flex justify-between mr-6 m-3">
             {[
-              { name: 'Current ER Patients', value: '24', bg: 'bg-gray-200' },
-              { name: 'Bed Availability', value: '10', bg: 'bg-gray-200' },
-              { name: 'ER Status', value: 'Moderate', bg: 'bg-gray-200' },
-              { name: 'Staff Availability', value: 'High', bg: 'bg-gray-200' },
+              { name: 'Current ER Patients', value: metrics.currentPatients, bg: 'bg-gray-200' },
+              { name: 'Bed Availability', value: metrics.bedAvailability, bg: 'bg-gray-200' },
+              { name: 'ER Status', value: metrics.erStatus, bg: 'bg-gray-200' },
+              { name: 'Staff Availability', value: metrics.staffAvailability , bg: 'bg-gray-200' },
             ].map((item, index) => (
               <button
                 key={index}
@@ -164,9 +204,9 @@ const Dashboard = () => {
 
             {/* Staff Scheduling */}
             <div className="col-span-3 bg-white p-4 rounded-lg shadow-md mt-4">
-              <h2 className="text-blue-800 text-xl font-bold mb-4">Staff Scheduling</h2>
+              <h2 className="text-blue-800 text-xl font-bold mb-4">Patient Details</h2>
               <div className="h-[300px] bg-gray-200 rounded-lg flex items-center justify-center">
-                <span className="text-gray-500">[Staff schedule details]</span>
+                <span className="text-gray-500">[Patient Details]</span>
               </div>
             </div>
           </div>
