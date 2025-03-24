@@ -1,11 +1,21 @@
+from flask import Flask, jsonify
 import pandas as pd
-import matplotlib.pyplot as plt
-import time
 from datetime import datetime, timedelta
+import threading
+import time
 
-def update_hourly_graph():
-    plt.ion()  # Enable interactive mode
+app = Flask(__name__)
 
+# Global variable to store graph data
+graph_data = {
+    "hours": [],
+    "patient_counts": [],
+    "date_today": ""
+}
+
+# Function to update graph data
+def update_graph_data():
+    global graph_data
     while True:
         # Load dataset
         df = pd.read_csv("pat.csv")
@@ -54,26 +64,27 @@ def update_hourly_graph():
         while len(patient_counts) < 25:
             patient_counts.append(prevc)
 
-        # Step 4: Plot the graph
-        plt.clf()  # Clear previous plot
-        plt.plot(hours, patient_counts, linestyle="-", color="b", linewidth=2, marker="o", markersize=5)  # Consistent thickness
+        # Update global graph data
+        graph_data = {
+            "hours": hours,
+            "patient_counts": patient_counts,
+            "date_today": str(date_today)
+        }
 
-        # Labels and title
-        plt.xlabel("Time (Hours)", fontsize=12)
-        plt.ylabel("Number of Patients", fontsize=12)
-        plt.title(f"Patient Count Over Time - {date_today}", fontsize=14)
+        # Wait for 5 seconds before the next update
+        time.sleep(5)
 
-        # Ensure Y-axis has whole numbers (with a max of 20 for readability)
-        plt.yticks(range(0, max(max(patient_counts), 20) + 1)) 
+# Start the background thread
+thread = threading.Thread(target=update_graph_data)
+thread.daemon = True
+thread.start()
 
-        # Ensure X-axis shows full hours only (0 to 24)
-        plt.xticks(hours)
+# API endpoint to serve graph data
+@app.route('/graph-data', methods=['GET'])
+def get_graph_data():
+    return jsonify(graph_data)
 
-        # Grid for better readability
-        plt.grid(True, linestyle="--", alpha=0.5)
 
-        plt.draw()  # Update the plot
-        plt.pause(3)  # Pause for 3 seconds before the next update
-
-# Run the function
-update_hourly_graph()
+# Run the Flask app
+if __name__ == '__main__':
+    app.run(port=5001)

@@ -44,9 +44,9 @@ const Navbar = () => {
       }, []);
 
     return (
-        <div className="h-[15vh] flex justify-between items-center px-6 bg-[#5d86b5] mr-3 my-3 bg-opacity-75 rounded-lg shadow-2xl">
+        <div className="h-[12vh]  flex justify-between items-center px-6 bg-[#5d86b5] mr-3 my-3 bg-opacity-75 rounded-lg shadow-2xl">
 
-<div className="text-cyan-50 text-[1.4rem] font-sans font-semibold">
+<div className="text-cyan-50 text-[clamp(0.8rem,2vw,1.2rem)] font-sans font-semibold">
         Welcome to {hospitalName},{} - Successfully Logged In
       </div>
 
@@ -56,7 +56,7 @@ const Navbar = () => {
                 onClick={(e) =>{
                 e.stopPropagation();
                 setDropdownOpen((prev) => !prev);}}
-          className="flex items-center gap-2 text-[1.1rem] space-x-2 text-white hover:opacity-80 transition"
+          className="flex items-center gap-1 text-[clamp(0.8rem,2vw,1.2rem)] text-white hover:opacity-80 transition"
         > {userName}
           <FaUserCircle size={30} />
         </button>

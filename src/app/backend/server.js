@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const axios = require('axios');
 const bcrypt = require('bcrypt');
 
 dotenv.config();
@@ -166,7 +167,19 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+app.get('/graph-data', async (req, res) => {
+  try {
+      const response = await axios.get('http://localhost:5001/graph-data');
+      res.json(response.data);
+  } catch (error) {
+      console.error('Error fetching graph data:', error);
+      res.status(500).json({ message: 'Failed to fetch graph data' });
+  }
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
+
+
+

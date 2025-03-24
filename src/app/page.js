@@ -66,11 +66,12 @@ const Login = () => {
   
       const data = await response.json();
       alert('Login successful!');
+      router.push('/dashboard');
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userName', data.user.userName);
       localStorage.setItem('hospitalName', data.user.hospitalName)
       localStorage.setItem('hospitalID', data.user.hospitalID)
-      router.push('/dashboard');
+      
     } catch (err) {
       console.error('Error during login:', err);
       setErrors({ general: 'Something went wrong! Please try again later.' });
