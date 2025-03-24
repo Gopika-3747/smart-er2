@@ -129,13 +129,12 @@ const Dashboard = () => {
           </div>
 
           {/* Main Content */}
-          <div className="p-6 grid grid-cols-3 gap-4">
+          <div className="p-6 w-full">
             {/* ER Trends */}
             <div className="col-span-2 bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-blue-800 text-xl font-bold mb-4">ER TRENDS</h2>
-              <div className="h-[250px]">
+              <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">ER TRENDS</h2>
+              <div className="h-[500px]">
               <div>
-              <h1>Hourly Patient Count Graph</h1>
               {imageUrl && <img src={imageUrl} alt="Hourly Patient Count Graph" />}
               </div>
                 
@@ -168,6 +167,7 @@ const Dashboard = () => {
 
         </div>
       </div>
+    </div>
     </div>
   );
 };
