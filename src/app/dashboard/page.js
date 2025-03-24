@@ -30,6 +30,7 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+  const [imageUrl, setImageUrl] = useState('');
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
   const [graphData, setGraphData] = useState(null);
@@ -43,19 +44,25 @@ const Dashboard = () => {
 
   // Fetch graph data from the backend
   useEffect(() => {
-    const fetchGraphData = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/graph-data');
-        const data = await response.json();
-        setGraphData(data);
-      } catch (error) {
-        console.error('Error fetching graph data:', error);
-      }
+    const fetchGraph = () => {
+      fetch('http://localhost:5003/graph')
+        .then((response) => response.blob())
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          setImageUrl(url);
+        })
+        .catch((error) => console.error('Error fetching graph:', error));
     };
-
-    fetchGraphData();
-  }, []);
   
+    // Fetch the graph immediately
+    fetchGraph();
+  
+    // Refresh the graph every 5 seconds
+    const interval = setInterval(fetchGraph, 5000);
+  
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchAdmittedPatients = async () => {
@@ -91,59 +98,10 @@ const Dashboard = () => {
   }
 
   // Chart.js data configuration
-  const chartData = {
-    labels: graphData ? graphData.hours : [],
-    datasets: [
-      {
-        label: 'Patient Count',
-        data: graphData ? graphData.patient_counts : [],
-        borderColor: 'rgb(15, 57, 223)',
-        backgroundColor: 'rgba(1, 23, 188, 0.2)',
-        borderWidth: 2,
-        pointRadius: 5,
-        pointBackgroundColor: 'rgb(49, 9, 229)',
-      },
-    ],
-  };
+  
 
   // Chart.js options
- const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    title: {
-      display: true,
-      text: `Patient Count Over Time - ${new Date().toISOString().split('T')[0]}`,
-      font: { size: 16 },
-    },
-  },
-  scales: {
-    x: {
-      title: {
-        display: true,
-        text: 'Time (Hours)',
-      },
-      grid: { display: true },
-    },
-    y: {
-      title: {
-        display: true,
-        text: 'Patient Count',
-      },
-      min: 0,  // Explicitly set the minimum value of the y-axis
-      max: 20, // Explicitly set the maximum value of the y-axis
-      ticks: {
-        stepSize: 2,  // Change stepSize to 2 for increments of 2
-        callback: (value) => {
-          if (value % 1 === 0) {  // Only display whole numbers
-            return value;
-          }
-        },
-      },
-      grid: { display: true },
-    },
-  },
-};
+
   
 
   return (
@@ -184,13 +142,11 @@ const Dashboard = () => {
             <div className="col-span-2 bg-white p-4 rounded-lg shadow-md">
               <h2 className="text-blue-800 text-xl font-bold mb-4">ER TRENDS</h2>
               <div className="h-[250px]">
-                {graphData ? (
-                  <Line data={chartData} options={chartOptions} style={{ width: '200%', height: '400px' }} />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-500">Loading graph...</span>
-                  </div>
-                )}
+              <div>
+              <h1>Hourly Patient Count Graph</h1>
+              {imageUrl && <img src={imageUrl} alt="Hourly Patient Count Graph" />}
+              </div>
+                
               </div>
             </div>
 
