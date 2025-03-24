@@ -89,12 +89,6 @@ const Dashboard = () => {
     return null;
   }
 
-  // Chart.js data configuration
-  
-
-  // Chart.js options
-
-  
 
   return (
     <div className="min-h-screen bg-opacity-85 backdrop-blur-sm bg-blue-100 overflow-x-hidden">

@@ -24,8 +24,6 @@ def get_admitted_patients():
         return jsonify({"num_admitted_patients": num_admitted_patients})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-@app.route('/test', methods=['GET'])
-def test():
-    return jsonify({"message": "Hello from Flask!"})
+
 if __name__ == '__main__':
     app.run(port=5002)  

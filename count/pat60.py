@@ -62,6 +62,7 @@ def generate_hourly_graph():
 
     # Step 4: Plot the graph
     plt.clf()  # Clear previous plot
+    plt.figure(figsize=(12, 5))
     plt.plot(hours, patient_counts, linestyle="-", color="b", linewidth=2, marker="o", markersize=5)  # Consistent thickness
 
     # Labels and title
