@@ -87,7 +87,8 @@ const RegistrationPage = () => {
   
   
     const newErrors = {};
-    if (!formData.userID) newErrors.userID = 'User ID is required.';
+    if (!formData.userID.trim()) newErrors.userID = 'User ID is required.';
+    if(formData.userID.length > 5) newErrors.userID='User ID must be less than 5 characters.';
     if (!formData.firstName) newErrors.firstName = 'First Name is required.';
     if (!formData.lastName) newErrors.lastName = 'Last Name is required.';
     if (!formData.email) {
@@ -101,8 +102,17 @@ const RegistrationPage = () => {
     }
     if (!formData.hospitalName) newErrors.hospitalName = 'Hospital Name is required.';
     if (!formData.hospitalID) newErrors.hospitalID = 'Hospital ID is required.';
-    if (!formData.password) newErrors.password = 'Password is required.';
-    if (!formData.reenterPassword) newErrors.reenterPassword = 'Please re-enter your password.';
+    if (!formData.password.trim()) newErrors.password = 'Password is required.';
+    if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+    if (!/\d/.test(formData.password)) {
+      newErrors.password = 'Password must contain at least one number';
+    }
+    if (!/[a-zA-Z]/.test(formData.password)) {
+      newErrors.password = 'Password must contain at least one letter';
+    }
+    if (!formData.reenterPassword.trim()) newErrors.reenterPassword = 'Please re-enter your password.';
     if (formData.password !== formData.reenterPassword) {
       newErrors.reenterPassword = 'Passwords do not match.';
     }
@@ -163,6 +173,7 @@ const RegistrationPage = () => {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div 
