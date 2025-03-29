@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
 import Sidebar from '../components/sidebar';
 import Navbar from '../components/navbar';
-import axios from 'axios';
-import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,8 +22,9 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const Dashboard = () => {
   const [imageUrl, setImageUrl] = useState('');
   const router = useRouter();
+  const [patients, setPatients] = useState([]);
+  const [loadingPatients, setLoadingPatients] = useState(true);
   const { isAuthenticated, isLoading } = useAuth();
-  const [graphData, setGraphData] = useState(null);
   const [metrics, setMetrics] = useState({
     currentPatients: 0,
     maxbed: 20,
@@ -76,6 +75,28 @@ const Dashboard = () => {
 
     fetchAdmittedPatients();
   }, []);
+
+
+  useEffect(() => {
+    const fetchCurrentPatients = async () => {
+      try {
+        const response = await fetch('http://localhost:5004/list');
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setPatients(data.current_patients || []);
+      } catch (error) {
+        console.error('Error fetching current patients:', error);
+      } finally {
+        setLoadingPatients(false);
+      }
+    };
+
+    fetchCurrentPatients();
+  }, []);
+
+
 
   if (isLoading) {
     return (
@@ -139,20 +160,47 @@ const Dashboard = () => {
           <div className="p-6 w-full">
             <div className="bg-white p-4 rounded-lg shadow-md">
               <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">Patient Details</h2>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                 <table className="w-full text-sm border-collapse border border-gray-300">
                   <thead>
-                    <tr className="bg-gray-200">
+                    <tr className="bg-gray-200 aticky top-0">
                       {['Patient ID', 'Hospital ID', 'Urban/Rural', 'Gender', 'Age', 'Blood Group', 'Triage Level', 'Factor', 'Entry Date', 'Entry Time', 'Leave Date', 'Leave Time'].map((heading) => (
-                        <th key={heading} className="p-2 border">{heading}</th>
+                        <th key={heading} className="p-2 border whitespace-nowrap">{heading}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td colSpan="12" className="text-center py-4 text-gray-500">No data available</td>
+                {loadingPatients ? (
+                  <tr>
+                    <td colSpan="12" className="text-center py-4">
+                      Loading patient data...
+                    </td>
+                  </tr>
+                ) : patients.length === 0 ? (
+                  <tr>
+                    <td colSpan="12" className="text-center py-4 text-gray-500">
+                      No patients currently admitted
+                    </td>
+                  </tr>
+                ) : (
+                  patients.map((patient) => (
+                    <tr key={patient.Patient_ID} className="hover:bg-gray-50">
+                      <td className="p-2 border">{patient.Patient_ID}</td>
+                      <td className="p-2 border">{patient.Hospital_ID}</td>
+                      <td className="p-2 border">{patient.Urban_Rural}</td>
+                      <td className="p-2 border">{patient.Gender}</td>
+                      <td className="p-2 border">{patient.Age}</td>
+                      <td className="p-2 border">{patient.Blood_Group}</td>
+                      <td className="p-2 border">{patient.Triage_Level}</td>
+                      <td className="p-2 border">{patient.Factor}</td>
+                      <td className="p-2 border">{patient.Entry_Date}</td>
+                      <td className="p-2 border">{patient.Entry_Time}</td>
+                      <td className="p-2 border">{patient.Leave_Date || '-'}</td>
+                      <td className="p-2 border">{patient.Leave_Time || '-'}</td>
                     </tr>
-                  </tbody>
+                  ))
+                )}
+              </tbody>
                 </table>
               </div>
             </div>
