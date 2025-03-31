@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
-import Sidebar from '../components/sidebar';
-import Navbar from '../components/navbar';
+const Sidebar = React.lazy(() => import('../components/sidebar'));
+const Navbar = React.lazy(()=>import('../components/navbar'));
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -36,7 +36,7 @@ const Dashboard = () => {
   // Fetch graph data from the backend
   useEffect(() => {
     const fetchGraph = () => {
-      fetch('http://localhost:5003/graph')
+      fetch('http://localhost:5001/graph')
         .then((response) => response.blob())
         .then((blob) => {
           const url = URL.createObjectURL(blob);
@@ -58,7 +58,7 @@ const Dashboard = () => {
   // Fetch admitted patients count
   const fetchAdmittedPatients = async () => {
     try {
-      const response = await fetch('http://localhost:5002/admitted-patients');
+      const response = await fetch('http://localhost:5001/admitted-patients');
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -80,7 +80,7 @@ const Dashboard = () => {
   // Fetch current patients
   const fetchCurrentPatients = async () => {
     try {
-      const response = await fetch('http://localhost:5004/list');
+      const response = await fetch('http://localhost:5001/list');
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -101,7 +101,7 @@ const Dashboard = () => {
   // Function to handle discharging a patient
   const handleDischarge = async (patientId) => {
     try {
-      const response = await fetch(`http://localhost:5004/discharge/${patientId}`, {
+      const response = await fetch(`http://localhost:5001/discharge/${patientId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
