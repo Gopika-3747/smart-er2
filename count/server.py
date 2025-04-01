@@ -1,177 +1,197 @@
 import csv
 import os
 import time
+import shutil
+import paramiko
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 from tempfile import NamedTemporaryFile
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
-class CSVProcessor:
+class DischargedPatientProcessor:
     def __init__(self):
-        # MongoDB configuration
+        # Configuration
+        self.csv_file = 'pat.csv'
+        self.local_backup_dir = 'csv_backups'
+        self.remote_backup_dir = '/remote/backup/path'  # Update this
+        
+        # MongoDB Setup
         self.db_uri = 'mongodb+srv://shaheem2:Er9RHzQvT2Lhedzi@smart-er.s39qc.mongodb.net/smart-er?retryWrites=true&w=majority&appName=smart-er'
         self.db_name = 'smart-er'
         self.collection_name = 'patients'
-        self.client = None
-        self.collection = None
         
-        # File processing
-        self.csv_file = 'pat.csv'
-        self.processing = False
-        self.last_processed_time = None
-        self.current_batch_start = None
+        # SFTP Setup (Update these)
+        self.sftp_host = 'your.backup.server'
+        self.sftp_username = 'username'
+        self.sftp_password = 'password'
+        self.sftp_port = 22
         
-        # Statistics
-        self.total_inserted = 0
-        self.total_skipped = 0
-        self.total_batches = 0
+        # State tracking
+        self.last_backup_time = None
+        self.last_processing_time = None
+        self.processed_count = 0
+        self.deleted_count = 0
         
-        self.connect_mongodb()
-        
-    def connect_mongodb(self):
-        try:
-            self.client = MongoClient(
-                self.db_uri,
-                connectTimeoutMS=30000,
-                socketTimeoutMS=None,
-                connect=False,
-                maxPoolSize=1
-            )
-            self.collection = self.client[self.db_name][self.collection_name]
-            self.client.admin.command('ping')
-            print("Successfully connected to MongoDB")
-        except Exception as e:
-            print(f"Failed to connect to MongoDB: {str(e)}")
-            raise
+        self.initialize()
 
-    def process_file(self):
-        if self.processing:
-            return
-            
-        self.processing = True
-        self.current_batch_start = datetime.now()
-        batch_end_time = self.current_batch_start + timedelta(hours=24)
+    def initialize(self):
+        """Initialize directories and connections"""
+        os.makedirs(self.local_backup_dir, exist_ok=True)
+        self.mongo_client = MongoClient(self.db_uri)
+        self.collection = self.mongo_client[self.db_name][self.collection_name]
+        print("System initialized")
+
+    def backup_to_server(self):
+        """Backup CSV to remote server via SFTP"""
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_name = f"backup_{timestamp}.csv"
+        local_path = os.path.join(self.local_backup_dir, backup_name)
+        remote_path = f"{self.remote_backup_dir}/{backup_name}"
         
         try:
-            # Create temporary file for non-discharged patients
-            temp_file = NamedTemporaryFile(mode='w', delete=False, newline='')
-            temp_file_path = temp_file.name
+            # Create local backup
+            shutil.copy2(self.csv_file, local_path)
             
+            # SFTP transfer
+            with paramiko.Transport((self.sftp_host, self.sftp_port)) as transport:
+                transport.connect(username=self.sftp_username, password=self.sftp_password)
+                with paramiko.SFTPClient.from_transport(transport) as sftp:
+                    sftp.put(local_path, remote_path)
+            
+            print(f"Backup completed: {remote_path}")
+            self.last_backup_time = datetime.now()
+            return True
+        except Exception as e:
+            print(f"Backup failed: {str(e)}")
+            return False
+
+    def process_discharged_patients(self):
+        """Process and remove discharged patients"""
+        start_time = datetime.now()
+        end_time = start_time + timedelta(hours=24)
+        processed_in_batch = 0
+        
+        # Create temp file for non-discharged patients
+        temp_file = NamedTemporaryFile(mode='w', delete=False, newline='')
+        temp_path = temp_file.name
+        
+        try:
             with open(self.csv_file, 'r') as infile, temp_file:
                 reader = csv.DictReader(infile)
                 writer = csv.DictWriter(temp_file, fieldnames=reader.fieldnames)
                 writer.writeheader()
                 
-                # Count total rows for progress
-                infile.seek(0)
-                total_rows = sum(1 for _ in csv.DictReader(infile))
-                infile.seek(0)
-                reader = csv.DictReader(infile)
-                
-                print(f"\nStarting new processing batch at {datetime.now()}")
-                print(f"Total records in CSV: {total_rows}")
-                
-                batch_inserted = 0
-                batch_skipped = 0
-                
                 for row in reader:
-                    if datetime.now() >= batch_end_time:
-                        print("Batch time limit reached, pausing until next batch")
+                    if datetime.now() >= end_time:
+                        print("24-hour processing window reached")
                         break
                         
-                    # Process discharged patients
-                    if row.get('Leave_Date') and row.get('Leave_Time'):
+                    # Check if patient is discharged
+                    if row.get('leave_date') and row.get('leave_time'):
                         try:
-                            processed_row = {k: v if v != '' else None for k, v in row.items()}
-                            self.collection.insert_one(processed_row)
-                            batch_inserted += 1
-                            self.total_inserted += 1
+                            # Insert to MongoDB
+                            clean_row = {k: v if v != '' else None for k, v in row.items()}
+                            self.collection.insert_one(clean_row)
+                            self.processed_count += 1
+                            processed_in_batch += 1
+                            
+                            # Delete from backup (if exists)
+                            self.delete_from_backups(row)
                         except Exception as e:
-                            print(f"Error inserting document: {str(e)}")
-                            writer.writerow(row)  # Keep problematic records
-                            batch_skipped += 1
+                            print(f"Insert failed, keeping in CSV: {str(e)}")
+                            writer.writerow(row)
                     else:
                         writer.writerow(row)
-                        batch_skipped += 1
-                        self.total_skipped += 1
                     
-                    # Print progress periodically
-                    processed = batch_inserted + batch_skipped
-                    if processed % 100 == 0 or processed == total_rows:
-                        progress = processed / total_rows * 100
-                        print(f"[{datetime.now().strftime('%H:%M:%S')}] Processed {processed}/{total_rows} "
-                              f"({progress:.1f}%) | Batch: +{batch_inserted}")
-                    
-                    # Dynamic sleep to spread processing
-                    time_elapsed = (datetime.now() - self.current_batch_start).total_seconds()
-                    remaining_time = max(0, (24 * 3600) - time_elapsed)
-                    if remaining_time > 0 and processed < total_rows:
-                        sleep_time = remaining_time / (total_rows - processed)
-                        sleep_time = min(sleep_time, 5)  # Cap at 5 seconds
-                        time.sleep(sleep_time)
+                    # Throttle processing
+                    time_elapsed = (datetime.now() - start_time).total_seconds()
+                    remaining_time = max(0, (24*3600) - time_elapsed)
+                    sleep_time = remaining_time / 1000  # Spread remaining processing
+                    time.sleep(min(sleep_time, 5))  # Max 5 seconds sleep
                 
-                # Update file only if we processed all records
-                if (batch_inserted + batch_skipped) >= total_rows:
-                    # Backup and replace original file
-                    backup_file = f"{self.csv_file}.bak.{datetime.now().strftime('%Y%m%d%H%M%S')}"
-                    os.replace(self.csv_file, backup_file)
-                    os.replace(temp_file_path, self.csv_file)
-                    print(f"Batch completed. Original file backed up as {backup_file}")
-                else:
-                    os.unlink(temp_file_path)
-                
-                self.total_batches += 1
-                print(f"Batch summary - Inserted: {batch_inserted}, Skipped: {batch_skipped}")
-                print(f"Totals since start - Batches: {self.total_batches}, "
-                      f"Inserted: {self.total_inserted}, Skipped: {self.total_skipped}")
-                
+            # Replace original file
+            shutil.move(temp_path, self.csv_file)
+            print(f"Processed {processed_in_batch} discharged patients in this batch")
+            self.last_processing_time = datetime.now()
+            return True
+            
         except Exception as e:
-            print(f"Error during processing: {str(e)}")
-            if 'temp_file_path' in locals() and os.path.exists(temp_file_path):
-                os.unlink(temp_file_path)
-        finally:
-            self.processing = False
-            self.last_processed_time = datetime.now()
+            print(f"Processing failed: {str(e)}")
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+            return False
 
-class CSVHandler(FileSystemEventHandler):
-    def __init__(self, processor):
-        self.processor = processor
-    
-    def on_modified(self, event):
-        if not event.is_directory and event.src_path.endswith('.csv'):
-            print(f"\nDetected change in CSV file at {datetime.now()}")
-            self.processor.process_file()
+    def delete_from_backups(self, patient_record):
+        """Delete patient record from all backup files"""
+        try:
+            for backup_file in os.listdir(self.local_backup_dir):
+                if backup_file.endswith('.csv'):
+                    backup_path = os.path.join(self.local_backup_dir, backup_file)
+                    self.remove_patient_from_file(backup_path, patient_record)
+                    self.deleted_count += 1
+        except Exception as e:
+            print(f"Backup cleanup error: {str(e)}")
 
-def main():
-    processor = CSVProcessor()
-    
-    # Initial processing
-    processor.process_file()
-    
-    # Set up file monitoring
-    event_handler = CSVHandler(processor)
-    observer = Observer()
-    observer.schedule(event_handler, path='.', recursive=False)
-    observer.start()
-    
-    print("\nMonitoring for CSV file changes...")
-    print("Press Ctrl+C to stop")
-    
-    try:
+    def remove_patient_from_file(self, file_path, patient_to_remove):
+        """Remove specific patient record from a CSV file"""
+        temp_file = NamedTemporaryFile(mode='w', delete=False, newline='')
+        temp_path = temp_file.name
+        
+        try:
+            with open(file_path, 'r') as infile, temp_file:
+                reader = csv.DictReader(infile)
+                writer = csv.DictWriter(temp_file, fieldnames=reader.fieldnames)
+                writer.writeheader()
+                
+                for row in reader:
+                    # Only write rows that don't match the patient to remove
+                    if not self.patients_match(row, patient_to_remove):
+                        writer.writerow(row)
+            
+            # Replace original backup
+            shutil.move(temp_path, file_path)
+        except Exception as e:
+            print(f"Error cleaning backup {file_path}: {str(e)}")
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+    def patients_match(self, row1, row2):
+        """Compare patient records for matching identifiers"""
+        # Customize this based on your patient identifier fields
+        return (row1.get('patient_id') == row2.get('patient_id') and
+                row1.get('admission_date') == row2.get('admission_date'))
+
+    def run_continuously(self):
+        """Main processing loop"""
+        print("Starting continuous processing...")
+        
+        # Initial backup
+        self.backup_to_server()
+        
         while True:
-            # Periodic processing in case watchdog misses events
-            if not processor.processing and (processor.last_processed_time is None or 
-                                           (datetime.now() - processor.last_processed_time) > timedelta(hours=24)):
-                processor.process_file()
-            time.sleep(60)
-    except KeyboardInterrupt:
-        observer.stop()
-        print("\nStopping monitor...")
-    
-    observer.join()
-    if processor.client:
-        processor.client.close()
+            try:
+                # Check if 24 hours passed since last backup
+                if (self.last_backup_time is None or 
+                    (datetime.now() - self.last_backup_time) >= timedelta(hours=24)):
+                    self.backup_to_server()
+                
+                # Process discharged patients
+                if (self.last_processing_time is None or 
+                    (datetime.now() - self.last_processing_time) >= timedelta(hours=24)):
+                    self.process_discharged_patients()
+                
+                # Sleep before next check
+                time.sleep(3600)  # Check hourly
+                
+            except KeyboardInterrupt:
+                print("\nShutting down gracefully...")
+                break
+            except Exception as e:
+                print(f"Unexpected error: {str(e)}")
+                time.sleep(60)  # Wait before retrying
+        
+        self.mongo_client.close()
+        print(f"Final stats - Processed: {self.processed_count}, Deleted from backups: {self.deleted_count}")
 
 if __name__ == "__main__":
-    main()
+    processor = DischargedPatientProcessor()
+    processor.run_continuously()
