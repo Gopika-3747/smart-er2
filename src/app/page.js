@@ -65,7 +65,6 @@ const Login = () => {
       }
   
       const data = await response.json();
-      alert('Login successful!');
       router.push('/dashboard');
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userName', data.user.userName);

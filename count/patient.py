@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from flask_cors import CORS
 import io
+import os
 
 # Set the Matplotlib backend to 'Agg'
 import matplotlib
@@ -11,6 +12,11 @@ matplotlib.use('Agg')
 
 app = Flask(__name__)
 CORS(app)  # Allow all origins
+
+CSV_FILE = "pat.csv"
+if not os.path.exists("pat.csv"):
+    with open("pat.csv", 'w') as f:
+        f.write("Patient_ID,Hospital_ID,Urban_Rural,Gender,Age,Blood_Group,Triage_Level,Factor,Entry_Date,Entry_Time,Leave_Date,Leave_Time\n")
 
 # ---------------------- Graph Generation Endpoint (Original port 5003) ----------------------
 def generate_hourly_graph():
@@ -187,6 +193,24 @@ def get_admitted_patients():
 
         # Return the result as JSON
         return jsonify({"num_admitted_patients": num_admitted_patients})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/add-patient', methods=['POST'])
+def add_patient():
+    try:
+        # Get data from request
+        patient_data = request.json
+        
+        # Create a DataFrame from the new patient data
+        new_patient_df = pd.DataFrame([patient_data])
+        
+        # Append to existing CSV
+        new_patient_df.to_csv("pat.csv", mode='a', header=False, index=False)
+        
+        return jsonify({"status": "success", "message": "Patient added successfully"}), 200
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

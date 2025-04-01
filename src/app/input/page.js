@@ -1,14 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
+import Sidebar from '../components/sidebar';
 
 const PatientEntry = () => {
-  // Default CSV content with headers
-  const defaultCsvData = "Patient_ID,Hospital_ID,Urban_Rural,Gender,Age,Blood_Group,Triage_Level,Factor,Entry_Date,Entry_Time,Leave_Date,Leave_Time";
-  const [csvData, setCsvData] = useState(defaultCsvData);
   const [hospitalId, setHospitalId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState({ success: false, message: "" });
   
   const [formData, setFormData] = useState({
     Patient_ID: "",
+    Hospital_ID:{hospitalId},
     Urban_Rural: "",
     Gender: "",
     Age: "",
@@ -17,8 +18,8 @@ const PatientEntry = () => {
     Factor: "",
     Entry_Date: "",
     Entry_Time: "",
-    Leave_Date: "",
-    Leave_Time: "",
+    Leave_Date: "NULL",
+    Leave_Time: "NULL",
   });
 
   // Get Hospital_ID from localStorage on component mount
@@ -36,55 +37,59 @@ const PatientEntry = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus({ success: false, message: "" });
 
-    // Create the complete data object with Hospital_ID from localStorage
-    const completeData = {
-      ...formData,
-      Hospital_ID: hospitalId,
-    };
+    try {
+      // Create the complete data object with Hospital_ID from localStorage
+      const completeData = {
+        ...formData,
+        Hospital_ID: hospitalId,
+      };
 
-    // Append new data to the existing CSV
-    const newRow = Object.values(completeData).join(",");
-    const updatedCsv = `${csvData}\n${newRow}`;
-    setCsvData(updatedCsv);
+      // Send data to backend
+      const response = await fetch('http://localhost:5001/add-patient', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(completeData),
+      });
 
-    // Download the updated CSV file
-    downloadCSV(updatedCsv, "pat.csv");
+      const result = await response.json();
 
-    // Reset form after submission
-    setFormData({
-      Patient_ID: "",
-      Urban_Rural: "",
-      Gender: "",
-      Age: "",
-      Blood_Group: "",
-      Triage_Level: "",
-      Factor: "",
-      Entry_Date: "",
-      Entry_Time: "",
-      Leave_Date: "NULL",
-      Leave_Time: "NULL",
-    });
-  };
-
-  // Helper function to trigger CSV download
-  const downloadCSV = (csvContent, fileName) => {
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-
-    link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      if (response.ok) {
+        setSubmitStatus({ success: true, message: "Patient added successfully!" });
+        // Reset form after successful submission
+        setFormData({
+          Patient_ID: "",
+          Urban_Rural: "",
+          Hospital_ID:"",
+          Gender: "",
+          Age: "",
+          Blood_Group: "",
+          Triage_Level: "",
+          Factor: "",
+          Entry_Date: "",
+          Entry_Time: "",
+          Leave_Date: "NULL",
+          Leave_Time: "NULL",
+        });
+      } else {
+        setSubmitStatus({ success: false, message: result.error || "Failed to add patient" });
+      }
+    } catch (error) {
+      setSubmitStatus({ success: false, message: "Network error. Please try again." });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex bg-gradient-to-r from-[#E3F2FD] to-[#BBDEFB]">
+      <Sidebar/>
       {/* Patient Entry Form Container */}
       <div className="flex-1 flex justify-center items-center p-6">
         <div className="w-full max-w-lg p-8 bg-white shadow-xl rounded-lg border border-gray-200">
@@ -92,12 +97,20 @@ const PatientEntry = () => {
             Patient Entry Form
           </h2>
           
+          
           {/* Display Hospital ID from localStorage */}
           {hospitalId && (
             <div className="mb-4 p-3 bg-blue-50 rounded-md">
               <p className="text-blue-800 font-medium">
                 Hospital ID: <span className="font-bold">{hospitalId}</span>
               </p>
+            </div>
+          )}
+
+          {/* Submission status message */}
+          {submitStatus.message && (
+            <div className={`mb-4 p-3 rounded-md ${submitStatus.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+              {submitStatus.message}
             </div>
           )}
 
@@ -235,14 +248,13 @@ const PatientEntry = () => {
               />
             </div>
 
-
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-2 text-white font-semibold rounded-md bg-blue-600 hover:bg-blue-700 transition"
-              disabled={!hospitalId}
+              className="w-full py-2 text-white font-semibold rounded-md bg-blue-600 hover:bg-blue-700 transition disabled:bg-blue-400"
+              disabled={!hospitalId || isSubmitting}
             >
-              {hospitalId ? "Submit Entry" : "Hospital ID not found"}
+              {isSubmitting ? "Submitting..." : (hospitalId ? "Submit Entry" : "Hospital ID not found")}
             </button>
           </form>
         </div>
