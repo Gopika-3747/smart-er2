@@ -1,6 +1,6 @@
 "use client";
-const Sidebar = React.lazy(() => import('../components/sidebar'));
-const Navbar = React.lazy(()=>import('../components/navbar'));
+import Sidebar from '../components/sidebar';
+import Navbar from '../components/navbar';
 
 
 import { useState } from "react";
