@@ -2,28 +2,25 @@ import csv
 import os
 import time
 import shutil
-import paramiko
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 from tempfile import NamedTemporaryFile
+import zipfile
 
 class DischargedPatientProcessor:
     def __init__(self):
         # Configuration
         self.csv_file = 'pat.csv'
         self.local_backup_dir = 'csv_backups'
-        self.remote_backup_dir = '/remote/backup/path'  # Update this
         
         # MongoDB Setup
         self.db_uri = 'mongodb+srv://shaheem2:Er9RHzQvT2Lhedzi@smart-er.s39qc.mongodb.net/smart-er?retryWrites=true&w=majority&appName=smart-er'
         self.db_name = 'smart-er'
         self.collection_name = 'patients'
         
-        # SFTP Setup (Update these)
-        self.sftp_host = 'your.backup.server'
-        self.sftp_username = 'username'
-        self.sftp_password = 'password'
-        self.sftp_port = 22
+        # Backup Configuration
+        self.backup_methods = ['local', 'zip']  # Options: 'local', 'zip'
+        self.max_local_backups = 30  # Keep last 30 backups
         
         # State tracking
         self.last_backup_time = None
@@ -40,29 +37,69 @@ class DischargedPatientProcessor:
         self.collection = self.mongo_client[self.db_name][self.collection_name]
         print("System initialized")
 
-    def backup_to_server(self):
-        """Backup CSV to remote server via SFTP"""
+    def backup_data(self):
+        """Handle all backup methods"""
+        success = False
+        
+        for method in self.backup_methods:
+            try:
+                if method == 'local':
+                    success = self.create_local_backup()
+                elif method == 'zip':
+                    success = self.create_zip_backup()
+                
+                if success:
+                    print(f"Backup succeeded via {method}")
+                    self.last_backup_time = datetime.now()
+                    break
+                    
+            except Exception as e:
+                print(f"Backup method {method} failed: {str(e)}")
+        
+        return success
+
+    def create_local_backup(self):
+        """Simple local file backup"""
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         backup_name = f"backup_{timestamp}.csv"
-        local_path = os.path.join(self.local_backup_dir, backup_name)
-        remote_path = f"{self.remote_backup_dir}/{backup_name}"
+        backup_path = os.path.join(self.local_backup_dir, backup_name)
         
         try:
-            # Create local backup
-            shutil.copy2(self.csv_file, local_path)
-            
-            # SFTP transfer
-            with paramiko.Transport((self.sftp_host, self.sftp_port)) as transport:
-                transport.connect(username=self.sftp_username, password=self.sftp_password)
-                with paramiko.SFTPClient.from_transport(transport) as sftp:
-                    sftp.put(local_path, remote_path)
-            
-            print(f"Backup completed: {remote_path}")
-            self.last_backup_time = datetime.now()
+            shutil.copy2(self.csv_file, backup_path)
+            self.cleanup_old_backups()
             return True
         except Exception as e:
-            print(f"Backup failed: {str(e)}")
+            print(f"Local backup failed: {str(e)}")
             return False
+
+    def create_zip_backup(self):
+        """Create compressed zip archive of backups"""
+        timestamp = datetime.now().strftime('%Y%m%d')
+        zip_name = f"backups_{timestamp}.zip"
+        zip_path = os.path.join(self.local_backup_dir, zip_name)
+        
+        try:
+            with zipfile.ZipFile(zip_path, 'a') as zipf:
+                for file in os.listdir(self.local_backup_dir):
+                    if file.endswith('.csv') and not file.startswith('backups_'):
+                        file_path = os.path.join(self.local_backup_dir, file)
+                        zipf.write(file_path, os.path.basename(file_path))
+            return True
+        except Exception as e:
+            print(f"Zip backup failed: {str(e)}")
+            return False
+
+    def cleanup_old_backups(self):
+        """Keep only recent backups to save space"""
+        try:
+            backups = sorted(os.listdir(self.local_backup_dir), 
+                           key=lambda x: os.path.getmtime(os.path.join(self.local_backup_dir, x)))
+            
+            while len(backups) > self.max_local_backups:
+                oldest = backups.pop(0)
+                os.remove(os.path.join(self.local_backup_dir, oldest))
+        except Exception as e:
+            print(f"Backup cleanup failed: {str(e)}")
 
     def process_discharged_patients(self):
         """Process and remove discharged patients"""
@@ -156,23 +193,22 @@ class DischargedPatientProcessor:
 
     def patients_match(self, row1, row2):
         """Compare patient records for matching identifiers"""
-        # Customize this based on your patient identifier fields
         return (row1.get('patient_id') == row2.get('patient_id') and
                 row1.get('admission_date') == row2.get('admission_date'))
 
     def run_continuously(self):
-        """Main processing loop"""
+        """Main processing loop with improved backup handling"""
         print("Starting continuous processing...")
         
-        # Initial backup
-        self.backup_to_server()
+        # Initial backup attempt
+        self.backup_data()
         
         while True:
             try:
                 # Check if 24 hours passed since last backup
                 if (self.last_backup_time is None or 
                     (datetime.now() - self.last_backup_time) >= timedelta(hours=24)):
-                    self.backup_to_server()
+                    self.backup_data()
                 
                 # Process discharged patients
                 if (self.last_processing_time is None or 
