@@ -13,14 +13,20 @@ class DischargedPatientProcessor:
         self.csv_file = 'pat.csv'
         self.local_backup_dir = 'csv_backups'
         
+        # Field names configuration
+        self.patient_id_field = 'Patient_ID'
+        self.admission_date_field = 'Entry_Date'
+        self.discharge_date_field = 'Leave_Date'  # Update to match your CSV
+        self.discharge_time_field = 'Leave_Time'  # Update to match your CSV
+        
         # MongoDB Setup
         self.db_uri = 'mongodb+srv://shaheem2:Er9RHzQvT2Lhedzi@smart-er.s39qc.mongodb.net/smart-er?retryWrites=true&w=majority&appName=smart-er'
         self.db_name = 'smart-er'
         self.collection_name = 'patients'
         
         # Backup Configuration
-        self.backup_methods = ['local', 'zip']  # Options: 'local', 'zip'
-        self.max_local_backups = 30  # Keep last 30 backups
+        self.backup_methods = ['local', 'zip']
+        self.max_local_backups = 30
         
         # State tracking
         self.last_backup_time = None
@@ -35,7 +41,38 @@ class DischargedPatientProcessor:
         os.makedirs(self.local_backup_dir, exist_ok=True)
         self.mongo_client = MongoClient(self.db_uri)
         self.collection = self.mongo_client[self.db_name][self.collection_name]
-        print("System initialized")
+        
+        # Validate CSV structure
+        if not self.validate_csv():
+            raise ValueError("CSV validation failed")
+        
+        print("System initialized successfully")
+
+    def validate_csv(self):
+        """Validate that CSV has required fields"""
+        try:
+            with open(self.csv_file, 'r') as f:
+                reader = csv.DictReader(f)
+                if not reader.fieldnames:
+                    print("Error: CSV file is empty")
+                    return False
+                
+                required_fields = {
+                    self.patient_id_field,
+                    self.admission_date_field,
+                    self.discharge_date_field,
+                    self.discharge_time_field
+                }
+                
+                missing_fields = required_fields - set(reader.fieldnames)
+                if missing_fields:
+                    print(f"Error: CSV missing required fields: {missing_fields}")
+                    return False
+                    
+            return True
+        except Exception as e:
+            print(f"CSV validation error: {str(e)}")
+            return False
 
     def backup_data(self):
         """Handle all backup methods"""
@@ -52,7 +89,6 @@ class DischargedPatientProcessor:
                     print(f"Backup succeeded via {method}")
                     self.last_backup_time = datetime.now()
                     break
-                    
             except Exception as e:
                 print(f"Backup method {method} failed: {str(e)}")
         
@@ -102,10 +138,12 @@ class DischargedPatientProcessor:
             print(f"Backup cleanup failed: {str(e)}")
 
     def process_discharged_patients(self):
-        """Process and remove discharged patients"""
+        """Process and remove discharged patients with robust null handling"""
         start_time = datetime.now()
         end_time = start_time + timedelta(hours=24)
         processed_in_batch = 0
+        
+        print(f"Starting patient processing at {start_time}")
         
         # Create temp file for non-discharged patients
         temp_file = NamedTemporaryFile(mode='w', delete=False, newline='')
@@ -117,16 +155,28 @@ class DischargedPatientProcessor:
                 writer = csv.DictWriter(temp_file, fieldnames=reader.fieldnames)
                 writer.writeheader()
                 
-                for row in reader:
+                for row_idx, row in enumerate(reader, 1):
                     if datetime.now() >= end_time:
                         print("24-hour processing window reached")
                         break
-                        
-                    # Check if patient is discharged
-                    if row.get('leave_date') and row.get('leave_time'):
+                    
+                    # Get discharge fields
+                    leave_date = row.get(self.discharge_date_field, '').strip()
+                    leave_time = row.get(self.discharge_time_field, '').strip()
+                    
+                    # Check if patient is properly discharged (non-empty values)
+                    if leave_date and leave_time:
                         try:
+                            patient_id = row.get(self.patient_id_field, 'UNKNOWN')
+                            print(f"Processing discharged patient #{row_idx}: {patient_id}")
+                            
+                            # Clean and prepare data for MongoDB
+                            clean_row = {
+                                k: (v if v and str(v).strip() else None)
+                                for k, v in row.items()
+                            }
+                            
                             # Insert to MongoDB
-                            clean_row = {k: v if v != '' else None for k, v in row.items()}
                             self.collection.insert_one(clean_row)
                             self.processed_count += 1
                             processed_in_batch += 1
@@ -134,7 +184,7 @@ class DischargedPatientProcessor:
                             # Delete from backup (if exists)
                             self.delete_from_backups(row)
                         except Exception as e:
-                            print(f"Insert failed, keeping in CSV: {str(e)}")
+                            print(f"Insert failed for patient {patient_id}, keeping in CSV: {str(e)}")
                             writer.writerow(row)
                     else:
                         writer.writerow(row)
@@ -144,7 +194,7 @@ class DischargedPatientProcessor:
                     remaining_time = max(0, (24*3600) - time_elapsed)
                     sleep_time = remaining_time / 1000  # Spread remaining processing
                     time.sleep(min(sleep_time, 5))  # Max 5 seconds sleep
-                
+            
             # Replace original file
             shutil.move(temp_path, self.csv_file)
             print(f"Processed {processed_in_batch} discharged patients in this batch")
@@ -180,7 +230,6 @@ class DischargedPatientProcessor:
                 writer.writeheader()
                 
                 for row in reader:
-                    # Only write rows that don't match the patient to remove
                     if not self.patients_match(row, patient_to_remove):
                         writer.writerow(row)
             
@@ -193,15 +242,16 @@ class DischargedPatientProcessor:
 
     def patients_match(self, row1, row2):
         """Compare patient records for matching identifiers"""
-        return (row1.get('patient_id') == row2.get('patient_id') and
-                row1.get('admission_date') == row2.get('admission_date'))
+        return (str(row1.get(self.patient_id_field)) == str(row2.get(self.patient_id_field)) and
+                str(row1.get(self.admission_date_field)) == str(row2.get(self.admission_date_field)))
 
     def run_continuously(self):
-        """Main processing loop with improved backup handling"""
+        """Main processing loop with improved error handling"""
         print("Starting continuous processing...")
         
         # Initial backup attempt
-        self.backup_data()
+        if not self.backup_data():
+            print("Warning: Initial backup failed")
         
         while True:
             try:
@@ -229,5 +279,9 @@ class DischargedPatientProcessor:
         print(f"Final stats - Processed: {self.processed_count}, Deleted from backups: {self.deleted_count}")
 
 if __name__ == "__main__":
-    processor = DischargedPatientProcessor()
-    processor.run_continuously()
+    try:
+        processor = DischargedPatientProcessor()
+        processor.run_continuously()
+    except Exception as e:
+        print(f"Fatal error: {str(e)}")
+        exit(1)
