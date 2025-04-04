@@ -135,13 +135,14 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-opacity-85 backdrop-blur-sm bg-blue-100 overflow-x-hidden">
-      <div className="flex min-h-screen w-full  flex-wrap">
+      <Navbar />
+      <div className="flex min-h-screen w-full flex-wrap">
 
         <Sidebar />
-
+      
         {/* Main Section */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <Navbar />
+          
 
           <div className="px-6 mt-4">
             <h2 className="text-gray-600 font-bold text-[clamp(1.4rem,2vw,1.9rem)]">ER Dashboard</h2>

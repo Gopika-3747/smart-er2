@@ -12,18 +12,24 @@ const Sidebar = () => {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
 
+
     return (
         <>
            
             {/* Sidebar */}
             <div 
-                className="fixed lg:relative top-0 left-0 h-full lg:h-auto bg-[#5d86b5] bg-opacity-85 rounded-lg shadow-2xl backdrop-blur-sm text-white p-4 flex flex-col justify-between m-3 w-[clamp(12%,18vw,20%)]"
+                className={`absolute lg:relative top-0 left-0 lg:h-auto bg-[#5d86b5] bg-opacity-85 rounded-lg shadow-2xl backdrop-blur-sm text-white p-4 flex flex-col justify-between m-3 mt-0 w-[clamp(12%,18vw,20%)] ${isOpen ? 'w-[clamp(20px,14vw,20%)] rounded-lg' : 'w-[clamp(5px,5vw,5rem)] '}` }
             >
-                <div className="flex flex-col gap-5 justify-center">
-                    <h1 className="text-center rounded-2xl rounded-b-none p-4 py-8 text-[clamp(0.8rem,2vw,1.7rem)] font-extrabold tracking-wide drop-shadow-lg bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] mb-16">
-                        smart_ER
-                    </h1>
+                
+                <div className="flex flex-col gap-4 justify-center">
 
+                <button 
+                    onClick={() => setIsOpen(!isOpen)} 
+                    className={` bg-[#5d86b5] text-white p-2 rounded-full shadow-md transition-all hover:scale-110 mb-8 ml-[-4px] w-[3vw]  ${isOpen ? 'justify-start': 'justify-center'}`}
+                >
+                    <IoMenu size={24} />
+                </button>
+                
                     {[
                         { href: "/dashboard", icon: MdSpaceDashboard, label: "Dashboard" },
                         { href: "/input", icon: BiEdit, label: "Patient Entry" },
@@ -33,20 +39,15 @@ const Sidebar = () => {
                         <Link 
                             key={href} 
                             href={href} 
-                            className={`flex gap-2 items-center p-3 rounded-2xl rounded-t-none transition shadow-xl text-[clamp(0.9rem, 1vw, 1.2rem)] 
-                            ${pathname === href ? 'bg-blue-700 text-gray-200' : 'hover:bg-blue-500'}`}
+                            className={`flex gap-2 items-center p-3 ml-[-6px] rounded-lg transition shadow-xl
+                            ${pathname === href ? 'bg-blue-700 text-gray-200' : 'hover:bg-blue-500'} ${isOpen ? 'justify-start' : 'justify-center w-[3.5vw]'}`}
                         >
-                            <Icon className="text-[clamp(1rem, 1.5vw, 1.3rem)] text-gray-300" />
-                            {label}
+                            <Icon size={20} className='text-2xl lg:text-3xl text-gray-300'/>
+                            <span className={`${!isOpen && 'hidden'} transition-all duration-300`}>{label}</span>
                         </Link>
                     ))}
                 </div>
 
-                <div className="relative">
-                    <button className="p-3 rounded-lg bg-black shadow-md mt-auto transition">
-                        Dark Mode
-                    </button>
-                </div>
             </div>
         </>
     );

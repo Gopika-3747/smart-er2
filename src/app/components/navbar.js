@@ -44,10 +44,13 @@ const Navbar = () => {
       }, []);
 
     return (
-        <div className="h-[12vh]  flex justify-between items-center px-6 bg-[#5d86b5] mr-3 my-3 bg-opacity-75 rounded-lg shadow-2xl">
+        <div className="h-[12vh] flex justify-between items-center px-2 pl-0 bg-[#5d86b5] m-3 bg-opacity-75 rounded-lg shadow-2xl">
 
-<div className="text-cyan-50 text-[clamp(0.8rem,2vw,1.2rem)] font-sans font-semibold">
-        Welcome to {hospitalName},{} - Successfully Logged In
+<div className="flex justify-between items-center gap-2">
+
+<h1 className="text-white rounded-l-lg p-4 text-[clamp(0.8rem,2vw,1.7rem)] font-extrabold tracking-wider drop-shadow-lg bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] ">smart_ER</h1>
+
+       <p className="text-white text-[clamp(0.8rem,2vw,1.2rem)] font-sans font-semibold"> Welcome to {hospitalName},{} - Successfully Logged In</p>
       </div>
 
       {/* Right - Profile Dropdown */}
