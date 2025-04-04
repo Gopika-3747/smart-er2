@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
 import Sidebar from '../components/sidebar';
 import Navbar from '../components/navbar';
-import axios from 'axios';
-import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -22,9 +20,11 @@ import {
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
+  const [imageUrl, setImageUrl] = useState('');
   const router = useRouter();
+  const [patients, setPatients] = useState([]);
+  const [loadingPatients, setLoadingPatients] = useState(true);
   const { isAuthenticated, isLoading } = useAuth();
-  const [graphData, setGraphData] = useState(null);
   const [metrics, setMetrics] = useState({
     currentPatients: 0,
     maxbed: 20,
@@ -35,40 +35,95 @@ const Dashboard = () => {
 
   // Fetch graph data from the backend
   useEffect(() => {
-    const fetchGraphData = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/graph-data');
-        const data = await response.json();
-        setGraphData(data);
-      } catch (error) {
-        console.error('Error fetching graph data:', error);
-      }
+    const fetchGraph = () => {
+      fetch('http://localhost:5001/graph')
+        .then((response) => response.blob())
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          setImageUrl(url);
+        })
+        .catch((error) => console.error('Error fetching graph:', error));
     };
 
-    fetchGraphData();
+    // Fetch the graph immediately
+    fetchGraph();
+
+    // Refresh the graph every 5 seconds
+    const interval = setInterval(fetchGraph, 5000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, []);
 
-  // Fetch admitted patients data
-  useEffect(() => {
-    const fetchAdmittedPatients = async () => {
-      try {
-        const response = await fetch('http://localhost:5002/admitted-patients');
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-        setMetrics((prevMetrics) => ({
-          ...prevMetrics,
-          currentPatients: data.num_admitted_patients,
-          bedAvailability: prevMetrics.maxbed - data.num_admitted_patients,
-        }));
-      } catch (error) {
-        console.error('Error fetching admitted patients:', error);
+  // Fetch admitted patients count
+  const fetchAdmittedPatients = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/admitted-patients');
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    };
+      const data = await response.json();
+      setMetrics((prevMetrics) => ({
+        ...prevMetrics,
+        currentPatients: data.num_admitted_patients,
+        bedAvailability: prevMetrics.maxbed - data.num_admitted_patients,
+      }));
+    } catch (error) {
+      console.error('Error fetching admitted patients:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchAdmittedPatients();
   }, []);
+
+  // Fetch current patients
+  const fetchCurrentPatients = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/list');
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      setPatients(data.current_patients || []);
+    } catch (error) {
+      console.error('Error fetching current patients:', error);
+    } finally {
+      setLoadingPatients(false);
+    }
+  };
+
+  // Initial fetch of patients
+  useEffect(() => {
+    fetchCurrentPatients();
+  }, []);
+
+  // Function to handle discharging a patient
+  const handleDischarge = async (patientId) => {
+    try {
+      const response = await fetch(`http://localhost:5001/discharge/${patientId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      // Refetch the updated patient list
+      await fetchCurrentPatients();
+
+      // Refetch the admitted patients count to update metrics
+      await fetchAdmittedPatients();
+
+      alert('Patient discharged successfully!');
+    } catch (error) {
+      console.error('Error discharging patient:', error);
+      alert('Failed to discharge patient.');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -81,57 +136,6 @@ const Dashboard = () => {
   if (!isAuthenticated) {
     return null;
   }
-
-  // Chart.js data configuration
-  const chartData = {
-    labels: graphData ? graphData.hours : [],
-    datasets: [
-      {
-        label: 'Patient Count',
-        data: graphData ? graphData.patient_counts : [],
-        borderColor: 'rgb(15, 57, 223)',
-        backgroundColor: 'rgba(1, 23, 188, 0.2)',
-        borderWidth: 2,
-        pointRadius: 5,
-        pointBackgroundColor: 'rgb(49, 9, 229)',
-      },
-    ],
-  };
-
-  // Chart.js options
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      title: {
-        display: true,
-        text: `Patient Count Over Time - ${new Date().toISOString().split('T')[0]}`,
-        font: { size: 16 },
-      },
-    },
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Time (Hours)',
-        },
-        grid: { display: true },
-      },
-      y: {
-        title: {
-          display: true,
-          text: 'Patient Count',
-        },
-        min: 0,
-        max: 20,
-        ticks: {
-          stepSize: 2,
-          callback: (value) => (value % 1 === 0 ? value : null),
-        },
-        grid: { display: true },
-      },
-    },
-  };
 
   return (
     <div className="min-h-screen bg-opacity-85 backdrop-blur-sm bg-blue-100 overflow-x-hidden">
@@ -152,9 +156,9 @@ const Dashboard = () => {
           <div className="opacity-85 text-black p-6 flex justify-evenly items-center flex-wrap gap-4">
             {[
               { name: 'Current ER Patients', value: metrics.currentPatients, bg: 'bg-gray-100' },
-              { name: 'Bed Availability', value: metrics.bedAvailability,bg: 'bg-gray-100' },
-              { name: 'ER Status', value: metrics.erStatus ,bg: 'bg-gray-100'},
-              { name: 'Staff Availability', value: metrics.staffAvailability ,bg: 'bg-gray-100'},
+              { name: 'Bed Availability', value: metrics.bedAvailability, bg: 'bg-gray-100' },
+              { name: 'ER Status', value: metrics.erStatus, bg: 'bg-gray-100' },
+              { name: 'Staff Availability', value: metrics.staffAvailability, bg: 'bg-gray-100' },
             ].map((item, index) => (
               <div
                 key={index}
@@ -166,46 +170,74 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Graph Section */}
+          {/* Main Content */}
           <div className="p-6 w-full">
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">ER Trends</h2>
-              <div className="bg-gray-100 p-2 w-full h-72 sm:h-96">
-                {graphData ? (
-                  <Line data={chartData} options={chartOptions} className="w-full h-full" />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-500">Loading graph...</span>
-                  </div>
-                )}
+            {/* ER Trends */}
+            <div className="col-span-2 bg-white p-4 rounded-lg shadow-md">
+              <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">ER TRENDS</h2>
+              <div className="h-[500px]">
+                <div>{imageUrl && <img src={imageUrl} alt="Hourly Patient Count Graph" />}</div>
+              </div>
+            </div>
+
+            {/* Patient Details Section */}
+            <div className="p-6 w-full">
+              <div className="bg-white p-4 rounded-lg shadow-md">
+                <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">Patient Details</h2>
+                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+                  <table className="w-full text-sm border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-200 sticky top-0">
+                        {['Patient ID', 'Hospital ID', 'Urban/Rural', 'Gender', 'Age', 'Blood Group', 'Triage Level', 'Factor', 'Entry Date', 'Entry Time', 'Action'].map((heading) => (
+                          <th key={heading} className="p-2 border whitespace-nowrap">
+                            {heading}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loadingPatients ? (
+                        <tr>
+                          <td colSpan="12" className="text-center py-4">
+                            Loading patient data...
+                          </td>
+                        </tr>
+                      ) : patients.length === 0 ? (
+                        <tr>
+                          <td colSpan="12" className="text-center py-4 text-gray-500">
+                            No patients currently admitted
+                          </td>
+                        </tr>
+                      ) : (
+                        patients.map((patient) => (
+                          <tr key={patient.Patient_ID} className="hover:bg-gray-50">
+                            <td className="p-2 border">{patient.Patient_ID}</td>
+                            <td className="p-2 border">{patient.Hospital_ID}</td>
+                            <td className="p-2 border">{patient.Urban_Rural}</td>
+                            <td className="p-2 border">{patient.Gender}</td>
+                            <td className="p-2 border">{patient.Age}</td>
+                            <td className="p-2 border">{patient.Blood_Group}</td>
+                            <td className="p-2 border">{patient.Triage_Level}</td>
+                            <td className="p-2 border">{patient.Factor}</td>
+                            <td className="p-2 border">{patient.Entry_Date}</td>
+                            <td className="p-2 border">{patient.Entry_Time}</td>
+                            <td className="p-2 border">
+                              <button
+                                onClick={() => handleDischarge(patient.Patient_ID)}
+                                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                              >
+                                Discharge
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Patient Details Section */}
-          <div className="p-6 w-full">
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">Patient Details</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-200">
-                      {['Patient ID', 'Hospital ID', 'Urban/Rural', 'Gender', 'Age', 'Blood Group', 'Triage Level', 'Factor', 'Entry Date', 'Entry Time', 'Leave Date', 'Leave Time'].map((heading) => (
-                        <th key={heading} className="p-2 border">{heading}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td colSpan="12" className="text-center py-4 text-gray-500">No data available</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-
         </div>
       </div>
     </div>
