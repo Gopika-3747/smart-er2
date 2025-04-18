@@ -139,74 +139,46 @@ class DischargedPatientProcessor:
 
     def process_discharged_patients(self):
         """Process and remove discharged patients with robust null handling"""
-        start_time = datetime.now()
-        end_time = start_time + timedelta(hours=24)
-        processed_in_batch = 0
-        
-        print(f"Starting patient processing at {start_time}")
-        
-        # Create temp file for non-discharged patients
         temp_file = NamedTemporaryFile(mode='w', delete=False, newline='')
         temp_path = temp_file.name
-        
+
         try:
             with open(self.csv_file, 'r') as infile, temp_file:
                 reader = csv.DictReader(infile)
                 writer = csv.DictWriter(temp_file, fieldnames=reader.fieldnames)
                 writer.writeheader()
-                
-                for row_idx, row in enumerate(reader, 1):
-                    if datetime.now() >= end_time:
-                        print("24-hour processing window reached")
-                        break
-                    
-                    # Get discharge fields
+
+                for row in reader:
                     leave_date = row.get(self.discharge_date_field, '').strip()
                     leave_time = row.get(self.discharge_time_field, '').strip()
-                    
-                    # Check if patient is properly discharged (non-empty values)
-                    if leave_date and leave_time:
+
+                    # Debug: Print row and discharge status
+                    print(f"Patient {row.get(self.patient_id_field)} - Leave_Date: {leave_date}, Leave_Time: {leave_time}")
+
+                    # Check if patient is discharged (non-empty date/time)
+                    if leave_date and leave_time and leave_date.lower() != 'null' and leave_time.lower() != 'null':
+                        print(f"Processing discharged patient: {row.get(self.patient_id_field)}")
                         try:
-                            patient_id = row.get(self.patient_id_field, 'UNKNOWN')
-                            print(f"Processing discharged patient #{row_idx}: {patient_id}")
-                            
-                            # Clean and prepare data for MongoDB
-                            clean_row = {
-                                k: (v if v and str(v).strip() else None)
-                                for k, v in row.items()
-                            }
-                            
-                            # Insert to MongoDB
-                            self.collection.insert_one(clean_row)
+                            # Insert into MongoDB
+                            self.collection.insert_one(row)
                             self.processed_count += 1
-                            processed_in_batch += 1
-                            
-                            # Delete from backup (if exists)
-                            self.delete_from_backups(row)
                         except Exception as e:
-                            print(f"Insert failed for patient {patient_id}, keeping in CSV: {str(e)}")
-                            writer.writerow(row)
+                            print(f"Failed to insert into MongoDB: {str(e)}")
+                            writer.writerow(row)  # Keep in CSV if MongoDB fails
                     else:
+                        # Keep non-discharged patients in CSV
                         writer.writerow(row)
-                    
-                    # Throttle processing
-                    time_elapsed = (datetime.now() - start_time).total_seconds()
-                    remaining_time = max(0, (24*3600) - time_elapsed)
-                    sleep_time = remaining_time / 1000  # Spread remaining processing
-                    time.sleep(min(sleep_time, 5))  # Max 5 seconds sleep
-            
-            # Replace original file
+
+            # Replace original file only if temp file was successfully written
             shutil.move(temp_path, self.csv_file)
-            print(f"Processed {processed_in_batch} discharged patients in this batch")
-            self.last_processing_time = datetime.now()
+            print(f"Processed {self.processed_count} discharged patients.")
             return True
-            
+
         except Exception as e:
-            print(f"Processing failed: {str(e)}")
+            print(f"Error processing CSV: {str(e)}")
             if os.path.exists(temp_path):
                 os.unlink(temp_path)
             return False
-
     def delete_from_backups(self, patient_record):
         """Delete patient record from all backup files"""
         try:

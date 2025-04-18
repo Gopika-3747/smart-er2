@@ -2,17 +2,45 @@
 "use client";
 import Sidebar from '../components/sidebar';
 
-
-import { useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { FaChartLine, FaSyncAlt } from "react-icons/fa";
-
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 const Predictions = () => {
+  const [imageUrl, setImageUrl] = useState('');
   // Mock prediction data
   const [predictions, setPredictions] = useState([
     { id: 1, category: "ER Load", value: "High", color: "bg-red-500" },
     { id: 2, category: "Critical Cases", value: "Moderate", color: "bg-yellow-500" },
     { id: 3, category: "Bed Availability", value: "Low", color: "bg-green-500" },
   ]);
+  useEffect(() => {
+      const fetchGraph2 = () => {
+        fetch('http://localhost:5005/predict-graph')
+          .then((response) => response.blob())
+          .then((blob) => {
+            const url = URL.createObjectURL(blob);
+            setImageUrl(url);
+          })
+          .catch((error) => console.error('Error fetching graph:', error));
+      };
+      fetchGraph2();
+
+    // Refresh the graph every 5 seconds
+    const interval = setInterval(fetchGraph2, 5000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen p-6 bg-gray-100">
@@ -40,8 +68,15 @@ const Predictions = () => {
             </div>
           
           ))}
+          <Sidebar/>
+          <div className="col-span-2 bg-white p-4 rounded-lg shadow-md">
+              <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">ER TRENDS</h2>
+              <div className="h-[500px]">
+                <div>{imageUrl && <img src={imageUrl} alt="Hourly Patient Count Graph" />}</div>
+              </div>
+            </div>
         </div>
-        <Sidebar/>
+        
       </div>
     </div>
   );
