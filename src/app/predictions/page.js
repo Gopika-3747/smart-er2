@@ -38,8 +38,10 @@ const Predictions = () => {
               <h3 className="text-lg font-semibold">{item.category}</h3>
               <p className="text-xl">{item.value}</p>
             </div>
+          
           ))}
         </div>
+        <Sidebar/>
       </div>
     </div>
   );
