@@ -1,66 +1,61 @@
 'use client';
-import Link from 'next/link';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { FaHome, FaBell, FaUserMd, FaChartBar, FaBars } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
 import { usePathname } from 'next/navigation';
-import { MdSpaceDashboard } from 'react-icons/md';
-import { MdOutlineAutoGraph } from "react-icons/md";
-import { IoMdNotifications } from 'react-icons/io';
-import { BiEdit } from 'react-icons/bi';
-import { useState } from 'react';
-import { IoMenu, IoClose } from 'react-icons/io5';
 
 const Sidebar = () => {
-    const pathname = usePathname();
-    const [isOpen, setIsOpen] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(true);
+  const pathname = usePathname(); // <-- ADDED
 
-    // Determine if sidebar should appear expanded
-    const expanded = isOpen || isHovered;
 
-    return (
-        <>
-            {/* Sidebar */}
-            <div 
-                className={`absolute lg:relative top-0 left-0 lg:h-auto bg-[#5d86b5] bg-opacity-85 rounded-lg shadow-2xl backdrop-blur-sm text-white p-4 flex flex-col justify-between m-3 mt-0 transition-all duration-300 ease-in-out ${
-                    expanded ? 'w-[clamp(12%,18vw,20%)]' : 'w-[clamp(5px,5vw,5rem)]'
-                }`}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+  const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const menuItems = [
+    { name: 'Dashboard', icon: <FaHome size={20} />, route: '/dashboard' },
+    { name: 'Notifications', icon: <FaBell size={20} />, route: '/notifications' },
+    { name: 'Patient Entry', icon: <FaUserMd size={20} />, route: '/input' },
+    { name: 'Prediction', icon: <FaChartBar size={20} />, route: '/predictions' },
+  ];
+
+  return (
+    <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'w-56' : 'w-18'} 
+      bg-[#5d86b5] gap-2 bg-opacity-65 backdrop-blur-md text-gray-200 min-h-[88vh] 
+      p-3 shadow-2xl rounded-tr-xl rounded-br-xl flex flex-col`}>
+      
+      {/* Toggle Button */}
+      <div className="flex justify-end mb-3">
+        <button
+          onClick={toggleSidebar}
+          className=" text-gray-100 bg-blue-00 hover:text-blue-200 transition p-1"
+        >
+          {isOpen ? <IoClose size={22} /> : <FaBars size={22} />}
+        </button>
+      </div>
+
+      {/* Menu */}
+      <div className="flex flex-col gap-5 mt-2">
+      {menuItems.map((item, index) => {
+          const isActive = pathname === item.route;
+
+          return (
+            <button
+              key={index}
+              onClick={() => router.push(item.route)}
+              className={`flex items-center gap-4 text-md font-medium p-3 rounded-xl rounded-t-none transition whitespace-nowrap shadow-xl ${isOpen ? '' : "rounded-t-xl"}
+                ${isActive ? 'bg-blue-600 text-gray-100 font-semibold' : 'hover:bg-blue-200 hover:text-[#245370]'}`}
             >
-                <div className="flex flex-col gap-4 justify-center">
-                    <button 
-                        onClick={() => {
-                            setIsOpen(!isOpen);
-                            // If closing manually, prevent hover from reopening
-                            if (isOpen) setIsHovered(false);
-                        }} 
-                        className={`bg-[#5d86b5] text-white p-2 rounded-full shadow-md transition-all hover:scale-110 mb-8 ml-[-4px] w-[3vw] ${
-                            expanded ? 'justify-start' : 'justify-center'
-                        }`}
-                    >
-                        <IoMenu size={24} />
-                    </button>
-                    
-                    {[
-                        { href: "/dashboard", icon: MdSpaceDashboard, label: "Dashboard" },
-                        { href: "/input", icon: BiEdit, label: "Patient Entry" },
-                        { href: "/predictions", icon: MdOutlineAutoGraph, label: "Predictions" },
-                        { href: "/notifications", icon: IoMdNotifications, label: "Notifications" },
-                    ].map(({ href, icon: Icon, label }) => (
-                        <Link 
-                            key={href} 
-                            href={href} 
-                            className={`flex gap-2 items-center p-3 ml-[-6px] rounded-lg transition shadow-xl ${
-                                pathname === href ? 'bg-blue-700 text-gray-200' : 'hover:bg-blue-500'
-                            } ${expanded ? 'justify-start' : 'justify-center w-[3.5vw]'}`}
-                        >
-                            <Icon size={20} className='text-2xl lg:text-3xl text-gray-300'/>
-                            <span className={`${!expanded && 'hidden'} transition-all duration-300`}>{label}</span>
-                        </Link>
-                    ))}
-                </div>
-            </div>
-        </>
-    );
+              {item.icon}
+              {isOpen && <span>{item.name}</span>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
 export default Sidebar;
