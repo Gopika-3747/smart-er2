@@ -44,13 +44,13 @@ const Navbar = () => {
       }, []);
 
     return (
-        <div className="h-[12vh] flex justify-between items-center px-2 pl-0 bg-[#5d86b5] m-3 bg-opacity-75 rounded-lg shadow-2xl">
+        <div className="fixed top-0 bottom-0 left-0 right-0 h-[12vh] flex justify-between items-center px-2 pl-0 bg-[#5d86b5] m-3 gap-1 bg-opacity-75 rounded-lg shadow-2xl">
 
 <div className="flex justify-between items-center gap-2">
 
-<h1 className="text-white rounded-l-lg p-4 text-[clamp(0.8rem,2vw,1.7rem)] font-extrabold tracking-wider drop-shadow-lg bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] ">smart_ER</h1>
+<h1 className="h-[12vh] text-center content-center text-white rounded-l-lg p-4 text-[clamp(1.3rem,2vw,1.7rem)] font-extrabold tracking-wider drop-shadow-lg bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] ">smart_ER</h1>
 
-       <p className="text-white text-[clamp(0.8rem,2vw,1.2rem)] font-sans font-semibold"> Welcome to {hospitalName},{} - Successfully Logged In</p>
+       <p className="text-white text-[clamp(0.8rem,2vw,1.1rem)] font-sans font-semibold"> Welcome to {hospitalName} - Successfully Logged In!</p>
       </div>
 
       {/* Right - Profile Dropdown */}
@@ -59,7 +59,7 @@ const Navbar = () => {
                 onClick={(e) =>{
                 e.stopPropagation();
                 setDropdownOpen((prev) => !prev);}}
-          className="flex items-center gap-1 text-[clamp(0.8rem,2vw,1.2rem)] text-white hover:opacity-80 transition"
+          className=" h-[12vh] font-semibold flex items-center pt-1 gap-1 text-[clamp(0.8rem,2vw,1.1rem)] text-white hover:opacity-80 transition"
         > {userName}
           <FaUserCircle size={30} />
         </button>

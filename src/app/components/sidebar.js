@@ -9,7 +9,7 @@ import { usePathname } from 'next/navigation';
 const Sidebar = () => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
-  const pathname = usePathname(); // <-- ADDED
+  const pathname = usePathname(); 
 
 
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -24,7 +24,7 @@ const Sidebar = () => {
   return (
     <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'w-56' : 'w-18'} 
       bg-[#5d86b5] gap-2 bg-opacity-65 backdrop-blur-md text-gray-200 min-h-[88vh] 
-      p-3 shadow-2xl rounded-tr-xl rounded-br-xl flex flex-col`}>
+      p-3 mt-0 m-3 shadow-2xl rounded-t-none rounded-xl flex flex-col`}>
       
       {/* Toggle Button */}
       <div className="flex justify-end mb-3">
@@ -45,7 +45,7 @@ const Sidebar = () => {
             <button
               key={index}
               onClick={() => router.push(item.route)}
-              className={`flex items-center gap-4 text-md font-medium p-3 rounded-xl rounded-t-none transition whitespace-nowrap shadow-xl ${isOpen ? '' : "rounded-t-xl"}
+              className={`flex items-center text-white gap-4 text-md font-medium p-3 rounded-xl rounded-t-none transition whitespace-nowrap shadow-xl ${isOpen ? '' : "rounded-t-xl"}
                 ${isActive ? 'bg-blue-600 text-gray-100 font-semibold' : 'hover:bg-blue-200 hover:text-[#245370]'}`}
             >
               {item.icon}

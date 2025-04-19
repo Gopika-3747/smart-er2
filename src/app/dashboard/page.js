@@ -140,7 +140,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-opacity-85 backdrop-blur-sm bg-blue-100 overflow-x-hidden">
       <Navbar />
-      <div className="flex min-h-screen w-full flex-wrap">
+      <div className="flex min-h-screen mt-20 w-full flex-wrap">
 
         <Sidebar />
       
@@ -149,7 +149,7 @@ const Dashboard = () => {
           
 
           <div className="px-6 mt-4">
-            <h2 className="text-gray-600 font-bold text-[clamp(1.4rem,2vw,1.9rem)]">ER Dashboard</h2>
+            <h2 className="text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)]">ER Dashboard</h2>
           </div>
 
           {/* Stats Section */}
