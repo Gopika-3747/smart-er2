@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Sidebar from '../components/sidebar';
+import Navbar from '../components/navbar';
 
 const PatientEntry = () => {
   const [hospitalId, setHospitalId] = useState("");
@@ -62,11 +63,12 @@ const PatientEntry = () => {
 
       if (response.ok) {
         setSubmitStatus({ success: true, message: "Patient added successfully!" });
+        setTimeout(() => setSubmitStatus({ success: false, message: '' }), 5000);
         // Reset form after successful submission
         setFormData({
           Patient_ID: "",
           Urban_Rural: "",
-          Hospital_ID:"",
+          Hospital_ID:{hospitalId},
           Gender: "",
           Age: "",
           Blood_Group: "",
@@ -88,11 +90,17 @@ const PatientEntry = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-r from-[#E3F2FD] to-[#BBDEFB]">
+    <>
+    
+    <div className="min-h-screen bg-opacity-80 backdrop-blur-sm bg-blue-100">
+      <Navbar/>
+      
+      <div className="flex min-h-screen w-full flex-wrap">
       <Sidebar/>
+      
       {/* Patient Entry Form Container */}
       <div className="flex-1 flex justify-center items-center p-6">
-        <div className="w-full max-w-lg p-8 bg-white shadow-xl rounded-lg border border-gray-200">
+        <div className="w-full max-w-lg p-8 bg-green-50 shadow-xl rounded-lg border border-gray-200">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             Patient Entry Form
           </h2>
@@ -108,11 +116,7 @@ const PatientEntry = () => {
           )}
 
           {/* Submission status message */}
-          {submitStatus.message && (
-            <div className={`mb-4 p-3 rounded-md ${submitStatus.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-              {submitStatus.message}
-            </div>
-          )}
+          
 
           {/* Form for New Entry */}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -124,7 +128,7 @@ const PatientEntry = () => {
                 value={formData.Patient_ID}
                 onChange={handleChange}
                 placeholder="Enter Patient ID"
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+                className="w-full px-4 py-2 border focus:outline-none rounded-md "
                 required
               />
             </div>
@@ -135,7 +139,7 @@ const PatientEntry = () => {
                 name="Urban_Rural"
                 value={formData.Urban_Rural}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none"
                 required
               >
                 <option value="">Select</option>
@@ -150,7 +154,7 @@ const PatientEntry = () => {
                 name="Gender"
                 value={formData.Gender}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none"
                 required
               >
                 <option value="">Select</option>
@@ -168,7 +172,7 @@ const PatientEntry = () => {
                 value={formData.Age}
                 onChange={handleChange}
                 placeholder="Enter Age"
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none"
                 required
               />
             </div>
@@ -179,7 +183,7 @@ const PatientEntry = () => {
                 name="Blood_Group"
                 value={formData.Blood_Group}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none"
                 required
               >
                 <option value="">Select</option>
@@ -200,7 +204,7 @@ const PatientEntry = () => {
                 name="Triage_Level"
                 value={formData.Triage_Level}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none"
                 required
               >
                 <option value="">Select</option>
@@ -219,7 +223,7 @@ const PatientEntry = () => {
                 value={formData.Factor}
                 onChange={handleChange}
                 placeholder="Enter Factor"
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none"
                 required
               />
             </div>
@@ -231,7 +235,7 @@ const PatientEntry = () => {
                 name="Entry_Date"
                 value={formData.Entry_Date}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none"
                 required
               />
             </div>
@@ -243,7 +247,7 @@ const PatientEntry = () => {
                 name="Entry_Time"
                 value={formData.Entry_Time}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none"
                 required
               />
             </div>
@@ -259,7 +263,13 @@ const PatientEntry = () => {
           </form>
         </div>
       </div>
+      </div>
+      <div className={`sticky h-[40px] w-[300px] top-[300px] left-[950px] right-10 bottom-2 pb-10 pt-5 px-7 text-right rounded shadow-lg text-md font-medium 
+          ${submitStatus.success ? 'bg-green-100 text-green-600' : 'hidden'}`}>{submitStatus.message}
+      </div>
     </div>
+      
+    </>
   );
 };
 

@@ -22,7 +22,7 @@ const Sidebar = () => {
     <div 
       className={`transition-all duration-300 ease-in-out ${isHovered ? 'w-48' : 'w-[3.8rem]'} 
         bg-[#5d86b5] gap-2 bg-opacity-65 backdrop-blur-md text-gray-200 min-h-[88vh] 
-         m-1 p-[3px] shadow-2xl rounded-r-2xl flex flex-col overflow-hidden`}
+         m-1 mt-3 p-1 shadow-2xl rounded-r-2xl flex flex-col overflow-hidden`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
