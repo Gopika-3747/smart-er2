@@ -162,9 +162,9 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-opacity-80 backdrop-blur-sm bg-blue-100 overflow-hidden">
+    <div className="min-h-screen top-0 bg-opacity-80 backdrop-blur-sm bg-blue-100">
       <Navbar />
-      <div className="flex min-h-screen mt-20 w-full flex-wrap">
+      <div className="flex min-h-screen mt-5 w-full flex-wrap">
 
         <Sidebar />
       

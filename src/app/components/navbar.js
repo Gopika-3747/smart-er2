@@ -47,17 +47,17 @@ const Navbar = () => {
       const userDetails = {
         userName,
         hospitalName,
-        userId: '12345', // You can load this from localStorage if stored
+        userId: '12345',
         role: 'Medical Staff'
       };
 
     return (
       <>
-        <div className="fixed top-0 bottom-0 left-0 right-0 h-[12vh] flex justify-between items-center px-2 pl-0 bg-[#5d86b5] m-1 mt-2 gap-1 bg-opacity-75 rounded-t-2xl shadow-2xl">
+        <div className="sticky top-1 rounded-t-2xl bottom-0 left-0 right-0 z-[9999] mx-1 h-[12vh] flex justify-between items-center px-2 pl-0 bg-[#5d86b5] gap-1 shadow-2xl">
 
 <div className="flex justify-between items-center gap-2">
 
-<h1 className="h-[12vh] w-48 text-center content-center text-white  rounded-tl-2xl p-4 text-[clamp(1.3rem,2vw,1.7rem)] font-extrabold tracking-wider drop-shadow-lg bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] ">smart_ER</h1>
+<h1 className="h-[12vh] w-48 text-center content-center text-white p-4 text-[clamp(1.3rem,2vw,1.7rem)] font-extrabold rounded-tl-2xl tracking-wider drop-shadow-lg bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] ">smart_ER</h1>
 
        <p className="text-white text-[clamp(0.8rem,2vw,1.1rem)] font-sans font-semibold"> Welcome to {hospitalName} - Successfully Logged In!</p>
       </div>

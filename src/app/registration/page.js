@@ -106,6 +106,7 @@ const RegistrationPage = () => {
     if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
     }
+    if (formData.password.length > 10) newErrors.password ="Password cannot be longer than 10 characters!"
     if (!/\d/.test(formData.password)) {
       newErrors.password = 'Password must contain at least one number';
     }
@@ -253,7 +254,7 @@ const RegistrationPage = () => {
                 errors.hospitalName ? 'border-red-900' : 'border-gray-300'
               }`}
             />
-            {errors.hospitalName && <p className="text-red-500 text-sm">{errors.hospitalName}</p>}
+            {errors.hospitalName && <p className="text-red-900 text-sm">{errors.hospitalName}</p>}
             
 
             <input
@@ -263,10 +264,10 @@ const RegistrationPage = () => {
               value={formData.hospitalID}
               onChange={handleChange}
               className={`register ${
-                errors.hospitalID ? 'border-red-500' : 'border-gray-300'
+                errors.hospitalID ? 'border-red-900' : 'border-gray-300'
               }`}
             />
-            {errors.hospitalID && <p className="text-red-500 text-sm">{errors.hospitalID}</p>}
+            {errors.hospitalID && <p className="text-red-900 text-sm">{errors.hospitalID}</p>}
 
             <input
               type="password"
@@ -303,7 +304,7 @@ const RegistrationPage = () => {
                 placeholder="Supervisor ID"
                 value={credentials.supervisorId}
                 onChange={handleCredentialChange}
-                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic mb-2"
+                className=" register placeholder:italic"
               />
               <input
                 type="password"
@@ -311,9 +312,9 @@ const RegistrationPage = () => {
                 placeholder="Supervisor Password"
                 value={credentials.supervisorPassword}
                 onChange={handleCredentialChange}
-                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic"
+                className="register placeholder:italic"
               />
-              {credentialError && <p className="text-red-500 text-sm mt-2">{credentialError}</p>}
+              {credentialError && <p className="text-red-500 text-sm">{credentialError}</p>}
             </div>
           )}
 
@@ -327,7 +328,7 @@ const RegistrationPage = () => {
                 placeholder="Admin ID"
                 value={credentials.adminId}
                 onChange={handleCredentialChange}
-                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic mb-2"
+                className="register placeholder:italic mb-2"
               />
               <input
                 type="password"
@@ -335,9 +336,9 @@ const RegistrationPage = () => {
                 placeholder="Admin Password"
                 value={credentials.adminPassword}
                 onChange={handleCredentialChange}
-                className="w-full p-2 border-2 rounded-md shadow-sm placeholder:italic"
+                className="register placeholder:italic"
               />
-              {credentialError && <p className="text-red-500 text-sm mt-2">{credentialError}</p>}
+              {credentialError && <p className="text-red-500 text-sm ">{credentialError}</p>}
             </div>
           )}
 
