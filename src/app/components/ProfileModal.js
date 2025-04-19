@@ -16,7 +16,7 @@ const ProfileModal = ({ isOpen, onClose, userDetails }) => {
 
         <div className="space-y-2 text-gray-700 text-sm">
           <p><span className="font-semibold">Name:</span> {userDetails.userName}</p>
-          <p><span className="font-semibold">User ID:</span> {userDetails.userId || 'N/A'}</p>
+          <p><span className="font-semibold">User ID:</span> {userDetails.userID || 'N/A'}</p>
           <p><span className="font-semibold">Role:</span> {userDetails.role || 'Medical Staff'}</p>
           <p><span className="font-semibold">Hospital:</span> {userDetails.hospitalName}</p>
         </div>
