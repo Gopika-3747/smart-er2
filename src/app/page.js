@@ -80,6 +80,7 @@ const Login = () => {
   
       const data = await response.json();
       console.log('API Response:', data);
+      localStorage.setItem("justLoggedIn", "true");
       router.push('/dashboard');
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userName', data.user.userName);
@@ -110,8 +111,7 @@ const Login = () => {
   return (
     <div className="flex flex-col md:flex-row h-screen">
       {showPopup && (
-        <div className="fixed top-1 rounded-b-xl right-1 left-1 bg-gray-600 text-white text-[0.9rem] px-4 py-3 z-50">
-          Logout successful!
+        <div className="fixed text-[0.9rem] text-left bottom-2 right-3 left-3 rounded-lg bg-gray-800 text-gray-200 p-4 shadow z-50 transition-all transform ease-in duration-300"> Logout Successful!
         </div>
       )}
       <div className="flex flex-1 md:flex-[1.75] items-center justify-center p-6 md:p-10 bg-[#5d86b5] backdrop-blur-sm bg-opacity-75">

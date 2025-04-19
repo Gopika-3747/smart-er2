@@ -33,6 +33,21 @@ const Dashboard = () => {
     staffAvailability: 'High',
   });
 
+  const [showPopup1, setShowPopup1] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
+const [showPopup, setShowPopup] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("justLoggedIn")) {
+      setShowPopup(true);
+      localStorage.removeItem("justLoggedIn");
+
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 3000); // show for 3 sec
+    }
+  }, []);
+
   const calculateErStatus = (currentPatients, maxCapacity) => {
     const percentage = (currentPatients / maxCapacity) * 100;
     
@@ -122,10 +137,14 @@ const Dashboard = () => {
       await fetchCurrentPatients();
       await fetchAdmittedPatients();
 
-      alert('Patient discharged successfully!');
+      setPopupMessage('Patient discharged successfully!');
+      setShowPopup1(true);
+      setTimeout(() => setShowPopup(false), 3000);
     } catch (error) {
       console.error('Error discharging patient:', error);
-      alert('Failed to discharge patient.');
+      setPopupMessage('Failed to discharge patient.');
+    setShowPopup1(true);
+    setTimeout(() => setShowPopup(false), 3000);
     }
   };
 
@@ -154,7 +173,7 @@ const Dashboard = () => {
       case 'ER Status':
         if (value === 'High') return 'border-red-500';
         if (value === 'Moderate') return 'border-yellow-400';
-        if (value === 'Low') return 'border-green-300';
+        if (value === 'Low') return 'border-green-500';
         return 'border-blue-500';
       case 'Staff Availability':
         if (value === 'Low') return 'border-red-500';
@@ -167,16 +186,28 @@ const Dashboard = () => {
   };
 
   return (
+    <>
+    {showPopup1 && (
+  <div className="fixed bottom-4 right-32 left-32 bg-green-100 text-green-500 p-2 rounded-lg shadow-md animate-slide-in z-50">
+    {popupMessage}
+  </div>
+)}
+    {showPopup && (
+      <div className="fixed text-[0.9rem] text-left bottom-2 rounded-lg right-3 left-3 bg-gray-800 text-gray-200 p-4 shadow z-50 transition-all transform ease-in-out duration-300">
+        Successfully Logged In!
+      </div>
+    )}
     <div className="min-h-screen top-0 bg-opacity-80 backdrop-blur-sm bg-blue-100">
+      
       <Navbar />
       <div className="flex min-h-screen mt-5 w-full flex-wrap">
 
         <Sidebar />
-      
+        
         <div className="flex-1 flex flex-col overflow-hidden">
           
 
-          <div className="px-6 py-2 drop-shadow-lg mt-4">
+          <div className="px-6 py-2 drop-shadow-lg">
             <h2 className="text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)]">ER Dashboard</h2>
           </div>
 
@@ -209,17 +240,17 @@ const Dashboard = () => {
               <div className="bg-white p-4 rounded-lg shadow-md">
                 <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">Patient Details</h2>
                 <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-                  <table className="w-full text-sm border-collapse border border-gray-300">
+                  <table className="w-full text-sm border-collapse border-4 border-gray-500">
                     <thead>
-                      <tr className="bg-gray-200 sticky top-0">
+                      <tr className="bg-gray-100 sticky top-0">
                         {['Patient ID', 'Hospital ID', 'Urban/Rural', 'Gender', 'Age', 'Blood Group', 'Triage Level', 'Factor', 'Entry Date', 'Entry Time', 'Action'].map((heading) => (
-                          <th key={heading} className="p-2 border whitespace-nowrap">
+                          <th key={heading} className="p-2 border-2 whitespace-nowrap">
                             {heading}
                           </th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className=''>
                       {loadingPatients ? (
                         <tr>
                           <td colSpan="12" className="text-center py-4">
@@ -235,17 +266,17 @@ const Dashboard = () => {
                       ) : (
                         patients.map((patient) => (
                           <tr key={patient.Patient_ID} className="hover:bg-gray-50">
-                            <td className="p-2 border">{patient.Patient_ID}</td>
-                            <td className="p-2 border">{patient.Hospital_ID}</td>
-                            <td className="p-2 border">{patient.Urban_Rural}</td>
-                            <td className="p-2 border">{patient.Gender}</td>
-                            <td className="p-2 border">{patient.Age}</td>
-                            <td className="p-2 border">{patient.Blood_Group}</td>
-                            <td className="p-2 border">{patient.Triage_Level}</td>
-                            <td className="p-2 border">{patient.Factor}</td>
-                            <td className="p-2 border">{patient.Entry_Date}</td>
-                            <td className="p-2 border">{patient.Entry_Time}</td>
-                            <td className="p-2 border">
+                            <td className="p-2 border-2">{patient.Patient_ID}</td>
+                            <td className="p-2 border-2">{patient.Hospital_ID}</td>
+                            <td className="p-2 border-2">{patient.Urban_Rural}</td>
+                            <td className="p-2 border-2">{patient.Gender}</td>
+                            <td className="p-2 border-2">{patient.Age}</td>
+                            <td className="p-2 border-2">{patient.Blood_Group}</td>
+                            <td className="p-2 border-2">{patient.Triage_Level}</td>
+                            <td className="p-2 border-2">{patient.Factor}</td>
+                            <td className="p-2 border-2">{patient.Entry_Date}</td>
+                            <td className="p-2 border-2">{patient.Entry_Time}</td>
+                            <td className="p-2 border-2">
                               <button
                                 onClick={() => handleDischarge(patient.Patient_ID)}
                                 className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
@@ -264,7 +295,9 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      
     </div>
+    </>
   );
 };
 

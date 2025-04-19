@@ -172,7 +172,7 @@ const Predictions = () => {
             </div>
 
             {/* Graph Section */}
-            <div className="lg:col-span-2 bg-white p-4 rounded-lg shadow-md">
+            <div className="lg:col-span-2 bg-green-50 p-4 rounded-lg shadow-md">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-blue-800 text-xl font-bold">
                   ER TRENDS - {months.find(m => m.value === selectedMonth)?.name}

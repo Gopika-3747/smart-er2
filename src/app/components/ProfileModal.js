@@ -6,7 +6,7 @@ const ProfileModal = ({ isOpen, onClose, userDetails }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-top justify-center bg-black bg-opacity-40">
+    <div className="fixed top-0 bottom-0 left-0 right-0 z-50 flex items-top justify-center bg-black bg-opacity-40">
       <div className="bg-white rounded-lg shadow-2xl mt-32 h-48 w-[90%] max-w-sm p-6 relative">
         <button onClick={onClose} className="absolute top-2 right-2 text-gray-600 hover:text-black text-xl">
           &times;

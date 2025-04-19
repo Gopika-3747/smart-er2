@@ -15,13 +15,18 @@ const Navbar = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false); 
 
     const handleLogout = () => {
+
+      const confirmed = window.confirm("Are you sure you want to logout?");
+      if (confirmed) {
+        // Perform logout logic
+
         localStorage.removeItem('isAuthenticated'); 
         localStorage.removeItem('userName');
         localStorage.removeItem('hospitalName');
         localStorage.removeItem('role');
         localStorage.removeItem('userID');
         localStorage.setItem('justLoggedOut', 'true');
-        router.push('/');
+        router.push('/');}
     };
 
     useEffect(() => {
@@ -61,7 +66,7 @@ const Navbar = () => {
 
 <h1 className="h-[12vh] w-48 text-center content-center text-white p-4 text-[clamp(1.3rem,2vw,1.7rem)] font-extrabold rounded-tl-2xl tracking-wider drop-shadow-lg bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] ">smart_ER</h1>
 
-       <p className="text-white text-[clamp(0.8rem,2vw,1.1rem)] font-sans font-semibold"> Welcome to {hospitalName} - Successfully Logged In!</p>
+       <p className="text-white text-[clamp(0.9rem,2vw,1.2rem)] font-sans font-semibold"> Welcome to {hospitalName}</p>
       </div>
 
                 <div className="relative">
@@ -78,7 +83,7 @@ const Navbar = () => {
                     </button>
 
                     {dropdownOpen && (
-                        <div className="absolute right-0 mt-1 w-40 bg-gray-100 backdrop-blur-md shadow-lg z-50">
+                        <div className=" absolute right-0 rounded-lg mt-1 w-40 bg-blue-50 backdrop-blur-md shadow-lg z-50">
                             <button
                                 onClick={() => {
                                     setIsProfileOpen(true);
