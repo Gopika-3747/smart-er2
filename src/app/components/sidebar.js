@@ -20,18 +20,16 @@ const Sidebar = () => {
 
   return (
     <div 
-      className={`transition-all duration-300 ease-in-out ${isHovered ? 'w-48' : 'w-[4rem]'} 
+      className={`transition-all duration-300 ease-in-out ${isHovered ? 'w-48' : 'w-[3.8rem]'} 
         bg-[#5d86b5] gap-2 bg-opacity-65 backdrop-blur-md text-gray-200 min-h-[88vh] 
-        p-2 m-1 shadow-2xl rounded-tr-xl rounded-br-xl flex flex-col overflow-hidden`}
+         m-1 p-[3px] shadow-2xl rounded-r-2xl flex flex-col overflow-hidden`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Menu - No toggle button needed */}
-      <div className="flex flex-col gap-5 mt-8"> {/* Increased top margin */}
        
       
       {/* Menu */}
-      <div className="flex flex-col gap-5 mt-2">
+      <div className="flex flex-col gap-4 mt-20">
       {menuItems.map((item, index) => {
           const isActive = pathname === item.route;
 
@@ -40,9 +38,8 @@ const Sidebar = () => {
               key={index}
               onClick={() => router.push(item.route)}
               
-              className={`flex items-center text-white gap-4 
-                text-[clamp(0.9rem,2vw,1rem)] font-medium p-3 rounded-xl rounded-t-none transition duration-300 whitespace-nowrap shadow-xl
-                ${isActive ? 'bg-blue-600 text-gray-100 font-semibold' : 'hover:bg-blue-200 hover:text-[#245370]'}`}
+              className={`flex items-center gap-4 
+                text-[clamp(0.9rem,2vw,1rem)] font-medium p-3 transition duration-300 whitespace-nowrap shadow-md bg-opacity-65 ${isActive ? 'border-l-[5px] text-[#1f435a] bg-blue-100 border-l-blue-600 font-semibold' : 'text-gray-100 hover:bg-blue-200 hover:text-[#245370]'}`}
             >
              <span className="min-w-[20px] flex justify-center">{item.icon}</span>
              <span className={`transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'} ${isHovered ? 'translate-x-0' : '-translate-x-4'} transform`}>{item.name}</span>
@@ -50,7 +47,6 @@ const Sidebar = () => {
           );
         })}
       </div>
-    </div>
     </div>
   );
 };
