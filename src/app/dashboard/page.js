@@ -16,7 +16,6 @@ import {
   Legend,
 } from 'chart.js';
 
-// Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
@@ -25,6 +24,7 @@ const Dashboard = () => {
   const [patients, setPatients] = useState([]);
   const [loadingPatients, setLoadingPatients] = useState(true);
   const { isAuthenticated, isLoading } = useAuth();
+  
   const [metrics, setMetrics] = useState({
     currentPatients: 0,
     maxbed: 20,
@@ -33,7 +33,15 @@ const Dashboard = () => {
     staffAvailability: 'High',
   });
 
-  // Fetch graph data from the backend
+  const calculateErStatus = (currentPatients, maxCapacity) => {
+    const percentage = (currentPatients / maxCapacity) * 100;
+    
+    if (percentage >= 80) return 'Critical';
+    if (percentage >= 60) return 'High';
+    if (percentage >= 40) return 'Moderate';
+    return 'Low';
+  };
+
   useEffect(() => {
     const fetchGraph = () => {
       fetch('http://localhost:5001/graph')
@@ -45,17 +53,11 @@ const Dashboard = () => {
         .catch((error) => console.error('Error fetching graph:', error));
     };
 
-    // Fetch the graph immediately
     fetchGraph();
-
-    // Refresh the graph every 5 seconds
     const interval = setInterval(fetchGraph, 5000);
-
-    // Cleanup interval on component unmount
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch admitted patients count
   const fetchAdmittedPatients = async () => {
     try {
       const response = await fetch('http://localhost:5001/admitted-patients');
@@ -63,11 +65,19 @@ const Dashboard = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
-      setMetrics((prevMetrics) => ({
-        ...prevMetrics,
-        currentPatients: data.num_admitted_patients,
-        bedAvailability: prevMetrics.maxbed - data.num_admitted_patients,
-      }));
+      
+      setMetrics((prevMetrics) => {
+        const currentPatients = data.num_admitted_patients;
+        const bedAvailability = prevMetrics.maxbed - currentPatients;
+        const erStatus = calculateErStatus(currentPatients, prevMetrics.maxbed);
+        
+        return {
+          ...prevMetrics,
+          currentPatients,
+          bedAvailability,
+          erStatus
+        };
+      });
     } catch (error) {
       console.error('Error fetching admitted patients:', error);
     }
@@ -77,7 +87,6 @@ const Dashboard = () => {
     fetchAdmittedPatients();
   }, []);
 
-  // Fetch current patients
   const fetchCurrentPatients = async () => {
     try {
       const response = await fetch('http://localhost:5001/list');
@@ -93,12 +102,10 @@ const Dashboard = () => {
     }
   };
 
-  // Initial fetch of patients
   useEffect(() => {
     fetchCurrentPatients();
   }, []);
 
-  // Function to handle discharging a patient
   const handleDischarge = async (patientId) => {
     try {
       const response = await fetch(`http://localhost:5001/discharge/${patientId}`, {
@@ -112,10 +119,7 @@ const Dashboard = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      // Refetch the updated patient list
       await fetchCurrentPatients();
-
-      // Refetch the admitted patients count to update metrics
       await fetchAdmittedPatients();
 
       alert('Patient discharged successfully!');
@@ -136,6 +140,7 @@ const Dashboard = () => {
   if (!isAuthenticated) {
     return null;
   }
+
   const getBoxColor = (metricName, value) => {
     switch (metricName) {
       case 'Current ER Patients':
@@ -165,18 +170,13 @@ const Dashboard = () => {
     <div className="min-h-screen bg-opacity-80 backdrop-blur-sm bg-blue-100 overflow-hidden">
       <Navbar />
       <div className="flex min-h-screen mt-20 w-full flex-wrap">
-
         <Sidebar />
       
-        {/* Main Section */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          
-
           <div className="px-6 mt-4">
             <h2 className="text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)]">ER Dashboard</h2>
           </div>
 
-          {/* Stats Section */}
           <div className="opacity-95 text-black p-6 flex justify-evenly items-center flex-wrap gap-4">
             {[
               { name: 'Current ER Patients', value: metrics.currentPatients },
@@ -194,9 +194,7 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Main Content */}
           <div className="p-6 w-full">
-            {/* ER Trends */}
             <div className="col-span-2 bg-white p-4 rounded-lg shadow-md">
               <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">ER TRENDS</h2>
               <div className="h-[500px]">
@@ -204,7 +202,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Patient Details Section */}
             <div className="p-6 w-full">
               <div className="bg-white p-4 rounded-lg shadow-md">
                 <h2 className="text-blue-800 text-[clamp(0.8rem,10vw,1.3rem)] font-bold mb-4">Patient Details</h2>
