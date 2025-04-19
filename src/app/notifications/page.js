@@ -18,20 +18,18 @@ const Notifications = () => {
   const clearNotifications = () => setNotifications([]);
 
   return (
-    <div className="min-h-screen p-6 bg-gray-100 flex flex-wrap">
-        
-        <Sidebar/>
-        
-        
+    <div className="min-h-screen bg-opacity-80 backdrop-blur-sm bg-blue-100 ">
+        <Navbar/>
       {/* Header */}
-      <div>
-      <Navbar/>
-      <div className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-lg">
-        <h1 className="text-2xl font-semibold flex items-center">
-          <FaBell className="mr-2" /> Notifications
+      <div className="flex min-h-screen w-full flex-wrap">
+      <Sidebar />
+      <div className="flex-1 ml-3 mr-1">
+      <div className="flex-1 flex justify-between items-center overflow-hidden p-3 drop-shadow-xl">
+      
+        <h1 className="text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)] drop-shadow-lg mt-4"> Notifications
         </h1>
         <button 
-          className="flex items-center gap-2 px-4 py-2 bg-blue-800 hover:bg-blue-700 rounded-md shadow-md"
+          className="flex items-center gap-2 p-3 text-green-500 bg-green-100 hover:bg-blue-200 rounded-md shadow-md"
           onClick={clearNotifications}
         >
           <FaCheckCircle /> Mark all as read
@@ -53,6 +51,7 @@ const Notifications = () => {
         ) : (
           <p className="text-gray-500 text-center">No new notifications</p>
         )}
+      </div>
       </div>
       </div>
     </div>

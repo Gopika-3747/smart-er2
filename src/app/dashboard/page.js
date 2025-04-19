@@ -172,7 +172,7 @@ const Dashboard = () => {
         <div className="flex-1 flex flex-col overflow-hidden">
           
 
-          <div className="px-6 mt-4">
+          <div className="px-6 py-2 drop-shadow-lg mt-4">
             <h2 className="text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)]">ER Dashboard</h2>
           </div>
 
