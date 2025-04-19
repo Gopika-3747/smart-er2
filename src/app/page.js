@@ -79,11 +79,14 @@ const Login = () => {
       }
   
       const data = await response.json();
+      console.log('API Response:', data);
       router.push('/dashboard');
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userName', data.user.userName);
-      localStorage.setItem('hospitalName', data.user.hospitalName)
-      localStorage.setItem('hospitalID', data.user.hospitalID)
+      localStorage.setItem('hospitalName', data.user.hospitalName);
+      localStorage.setItem('hospitalID', data.user.hospitalID);
+      localStorage.setItem('role', data.user.role);
+      localStorage.setItem('userID',data.user.userID);
       
     } catch (err) {
       console.error('Error during login:', err);

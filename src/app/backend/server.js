@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const axios = require('axios');
 const bcrypt = require('bcrypt');
+const { data } = require('autoprefixer');
 
 dotenv.config();
 
@@ -60,8 +61,11 @@ app.post('/api/login', async (req, res) => {
         userName: `${user.firstName} ${user.lastName}`, 
         hospitalName: user.hospitalName,
         hospitalID: user.hospitalID,
+        role:user.role,
+        userID:user.userID,
       }, 
     });
+    
 
   } catch (err) {
     console.error('Error during login:', err);
