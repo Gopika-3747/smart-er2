@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
-
+import ProfileModal from "./ProfileModal";
 
 
 const Navbar = () => {
@@ -12,7 +12,7 @@ const Navbar = () => {
         localStorage.removeItem('isAuthenticated'); 
         localStorage.removeItem('username');
         localStorage.removeItem('hospitalName');
-        alert('Logged out successfully!');
+        localStorage.setItem('justLoggedOut', 'true');
         router.push('/');
       };
 
@@ -22,6 +22,7 @@ const Navbar = () => {
     const [userName, setUserName] = useState('User');
     const [hospitalName, setHospitalName] = useState('Hospital');
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false); 
 
      useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -43,12 +44,20 @@ const Navbar = () => {
         };
       }, []);
 
+      const userDetails = {
+        userName,
+        hospitalName,
+        userId: '12345', // You can load this from localStorage if stored
+        role: 'Medical Staff'
+      };
+
     return (
-        <div className="fixed top-0 bottom-0 left-0 right-0 h-[12vh] flex justify-between items-center px-2 pl-0 bg-[#5d86b5] m-1 mt-2 gap-1 bg-opacity-75 rounded-t-xl shadow-2xl">
+      <>
+        <div className="fixed top-0 bottom-0 left-0 right-0 h-[12vh] flex justify-between items-center px-2 pl-0 bg-[#5d86b5] m-1 mt-2 gap-1 bg-opacity-75 rounded-t-2xl shadow-2xl">
 
 <div className="flex justify-between items-center gap-2">
 
-<h1 className="h-[12vh] w-48 text-center content-center text-white  rounded-tl-xl p-4 text-[clamp(1.3rem,2vw,1.7rem)] font-extrabold tracking-wider drop-shadow-lg bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] ">smart_ER</h1>
+<h1 className="h-[12vh] w-48 text-center content-center text-white  rounded-tl-2xl p-4 text-[clamp(1.3rem,2vw,1.7rem)] font-extrabold tracking-wider drop-shadow-lg bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] ">smart_ER</h1>
 
        <p className="text-white text-[clamp(0.8rem,2vw,1.1rem)] font-sans font-semibold"> Welcome to {hospitalName} - Successfully Logged In!</p>
       </div>
@@ -66,10 +75,16 @@ const Navbar = () => {
 
         {/* Dropdown Menu */}
         {dropdownOpen && (
-          <div className="absolute right-0 mt-2 w-40 bg-blue-50 backdrop-blur-md shadow-lg z-50 ">
-            <a href="/profile" className=" block px-4 py-2 text-gray-800 hover:bg-gray-200">
-              Profile
-            </a>
+          <div className="absolute right-0 mt-1 w-40 bg-gray-100 backdrop-blur-md shadow-lg z-50 ">
+             <button
+                onClick={() => {
+                  setIsProfileOpen(true);
+                  setDropdownOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
+              >
+                Profile
+              </button>
             <button
               onClick={handleLogout}
               className=" block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-200"
@@ -80,6 +95,12 @@ const Navbar = () => {
         )}
       </div>
       </div>
+      <ProfileModal
+      isOpen={isProfileOpen}
+      onClose={() => setIsProfileOpen(false)}
+      userDetails={userDetails}
+    />
+    </>
     );
  } ;
 

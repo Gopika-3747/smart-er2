@@ -136,9 +136,33 @@ const Dashboard = () => {
   if (!isAuthenticated) {
     return null;
   }
+  const getBoxColor = (metricName, value) => {
+    switch (metricName) {
+      case 'Current ER Patients':
+        if (value >= 15) return 'border-red-500';
+        if (value >= 10) return 'border-yellow-400';
+        return 'border-green-500';
+      case 'Bed Availability':
+        if (value <= 5) return 'border-red-500';
+        if (value <= 10) return 'border-yellow-400';
+        return 'border-green-500';
+      case 'ER Status':
+        if (value === 'High') return 'border-red-500';
+        if (value === 'Moderate') return 'border-yellow-400';
+        if (value === 'Low') return 'border-green-300';
+        return 'border-blue-500';
+      case 'Staff Availability':
+        if (value === 'Low') return 'border-red-500';
+        if (value === 'Moderate') return 'border-yellow-400';
+        if (value === 'High') return 'border-green-500';
+        return 'border-blue-500';
+      default:
+        return 'border-blue-500';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-opacity-85 backdrop-blur-sm bg-blue-100 overflow-x-hidden">
+    <div className="min-h-screen bg-opacity-80 backdrop-blur-sm bg-blue-100 overflow-hidden">
       <Navbar />
       <div className="flex min-h-screen mt-20 w-full flex-wrap">
 
@@ -153,16 +177,16 @@ const Dashboard = () => {
           </div>
 
           {/* Stats Section */}
-          <div className="opacity-85 text-black p-6 flex justify-evenly items-center flex-wrap gap-4">
+          <div className="opacity-95 text-black p-6 flex justify-evenly items-center flex-wrap gap-4">
             {[
-              { name: 'Current ER Patients', value: metrics.currentPatients, bg: 'bg-gray-100' },
-              { name: 'Bed Availability', value: metrics.bedAvailability, bg: 'bg-gray-100' },
-              { name: 'ER Status', value: metrics.erStatus, bg: 'bg-gray-100' },
-              { name: 'Staff Availability', value: metrics.staffAvailability, bg: 'bg-gray-100' },
+              { name: 'Current ER Patients', value: metrics.currentPatients },
+              { name: 'Bed Availability', value: metrics.bedAvailability },
+              { name: 'ER Status', value: metrics.erStatus},
+              { name: 'Staff Availability', value: metrics.staffAvailability},
             ].map((item, index) => (
               <div
                 key={index}
-                className={`${item.bg} flex flex-col gap-2 border-y-8 border-red-400 h-[clamp(150px,15vh,300px)] w-[clamp(150px,15vw,300px)] justify-between items-center p-6 rounded-2xl shadow-xl`}
+                className={` hover:shadow-2xl shadow-lg  ${getBoxColor(item.name, item.value)} bg-[#fffeef] flex flex-col gap-2 border-t-[12px] transform transition duration-300 ease-in-out hover:scale-[1.1] h-[clamp(150px,15vh,300px)] w-[clamp(150px,15vw,300px)] justify-between items-center p-6 rounded-3xl rounded-t-none shadow-xl`}
               >
                 <span className="text-[clamp(1rem,2vw,1.1rem)] text-center font-medium">{item.name}</span>
                 <span className="text-lg font-bold">{item.value}</span>

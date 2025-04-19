@@ -2,10 +2,24 @@
 
 import { IoMdKey } from "react-icons/io";
 import { FaUserCircle, FaEye, FaEyeSlash } from "react-icons/fa";
-import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+
 
 const Login = () => {
+  const [showPopup, setShowPopup] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("justLoggedOut")) {
+      setShowPopup(true);
+      localStorage.removeItem("justLoggedOut");
+
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 3000);
+    }
+  }, []);
+
   const router = useRouter();
   const [formData, setFormData] = useState({
     userID: '',
@@ -78,9 +92,25 @@ const Login = () => {
     setIsLoading(false);
     }
   };
+  if (isLoading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-blue-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-blue-800 text-lg font-semibold">Logging you in, please wait...</p>
+        </div>
+      </div>
+    );
+  }
+  
 
   return (
     <div className="flex flex-col md:flex-row h-screen">
+      {showPopup && (
+        <div className="fixed top-1 rounded-b-xl right-1 left-1 bg-gray-600 text-white text-[0.9rem] px-4 py-3 z-50">
+          Logout successful!
+        </div>
+      )}
       <div className="flex flex-1 md:flex-[1.75] items-center justify-center p-6 md:p-10 bg-[#5d86b5] backdrop-blur-sm bg-opacity-75">
         <div className="text-center bg-gradient-to-br from-[#245370] via-[#2e5c7a] to-[#3b6b8f] rounded-2xl py-[120px] px-[100px] backdrop-blur-md">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-wide drop-shadow-lg text-white rounded-md flex items-center justify-center">Smart_ER</h1>
