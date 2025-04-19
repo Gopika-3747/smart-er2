@@ -18,10 +18,11 @@ const Predictions = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [isLoading, setIsLoading] = useState(false);
+  const [todaysPrediction, setTodaysPrediction] = useState(null);
   const [predictions, setPredictions] = useState([
-    { id: 1, category: "ER Load", value: "High", color: "bg-red-500" },
-    { id: 2, category: "Critical Cases", value: "Moderate", color: "bg-yellow-500" },
-    { id: 3, category: "Bed Availability", value: "Low", color: "bg-green-500" },
+    { id: 1, category: "Today's Patients", value: "Loading...", color: "bg-blue-500" },
+    { id: 2, category: "Critical Cases", value: "Loading...", color: "bg-yellow-500" },
+    { id: 3, category: "Bed Availability", value: "Loading...", color: "bg-green-500" },
   ]);
 
   const months = [
@@ -52,6 +53,37 @@ const Predictions = () => {
         console.error('Error fetching graph:', error);
         setIsLoading(false);
       });
+  };
+
+  const fetchTodaysPrediction = () => {
+    fetch('http://localhost:5005/todays-prediction')
+      .then(response => response.json())
+      .then(data => {
+        setTodaysPrediction(data.predicted_patient_count);
+        updatePredictions(data.predicted_patient_count);
+      })
+      .catch(error => {
+        console.error('Error fetching today\'s prediction:', error);
+      });
+  };
+
+  const updatePredictions = (patientCount) => {
+    let criticalCases = "Low";
+    let bedAvailability = "High";
+    
+    if (patientCount >= 15) {
+      criticalCases = "High";
+      bedAvailability = "Low";
+    } else if (patientCount >= 10) {
+      criticalCases = "Moderate";
+      bedAvailability = "Moderate";
+    }
+
+    setPredictions([
+      { id: 1, category: "Today's Patients", value: patientCount, color: "bg-blue-500" },
+      { id: 2, category: "Critical Cases", value: criticalCases, color: criticalCases === "High" ? "bg-red-500" : criticalCases === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
+      { id: 3, category: "Bed Availability", value: bedAvailability, color: bedAvailability === "Low" ? "bg-red-500" : bedAvailability === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
+    ]);
   };
 
   const handleDownload = () => {

@@ -72,6 +72,44 @@ def predict_graph(month):
         print(f"Error generating graph: {e}")
         return None
 
+def get_todays_prediction():
+    """Get today's predicted patient count from the model"""
+    try:
+        model = joblib.load('model.pkl')
+        model_columns = joblib.load('model_columns.pkl')
+        
+        today = datetime.date.today()
+        input_data = {
+            'Entry_Day': today.day,
+            'Entry_Month': today.month,
+            'Entry_Weekday': today.weekday()
+        }
+        
+        df = pd.DataFrame([input_data])
+        
+        for col in model_columns:
+            if col not in df.columns:
+                df[col] = 0
+                
+        df = df[model_columns]
+        
+        predicted_count = model.predict(df)[0]
+        return round(predicted_count)
+        
+    except Exception as e:
+        print(f"Error getting today's prediction: {e}")
+        return None
+    
+@app.route('/todays-prediction')
+def todays_prediction():
+    count = get_todays_prediction()
+    if count is not None:
+        return jsonify({
+            "date": datetime.date.today().isoformat(),
+            "predicted_patient_count": count
+        })
+    else:
+        return jsonify({"error": "Could not get today's prediction"}), 500
 @app.route('/predict-graph')
 def get_graph():
     """API endpoint to fetch the prediction graph."""
