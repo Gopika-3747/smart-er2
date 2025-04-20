@@ -6,44 +6,18 @@ from flask_cors import CORS
 import io
 import os
 import matplotlib
-from flask_socketio import SocketIO, emit
-from collections import defaultdict
 matplotlib.use('Agg')
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
+
 CSV_FILE = "pat.csv"
 current_day_initial_count = None
 last_midnight_count = None
-hospital_connections = defaultdict(set)
 
-# Initialize CSV file if not exists
-if not os.path.exists(CSV_FILE):
-    with open(CSV_FILE, 'w') as f:
+if not os.path.exists("pat.csv"):
+    with open("pat.csv", 'w') as f:
         f.write("Patient_ID,Hospital_ID,Urban_Rural,Gender,Age,Blood_Group,Triage_Level,Factor,Entry_Date,Entry_Time,Leave_Date,Leave_Time\n")
-
-def broadcast_patient_update(hospital_id, action, patient_data=None):
-    """Broadcast patient updates to all connected clients of the same hospital"""
-    if hospital_id in hospital_connections:
-        for sid in list(hospital_connections[hospital_id]):
-            try:
-                emit('patient_update', {
-                    'action': action,
-                    'patient': patient_data,
-                    'timestamp': datetime.now().isoformat(),
-                    'hospital_id': hospital_id
-                }, room=sid)
-            except:
-                hospital_connections[hospital_id].remove(sid)
-
-def get_current_patients(hospital_id=None):
-    """Get current patients with optional hospital filter"""
-    df = pd.read_csv(CSV_FILE)
-    df.replace("NULL", pd.NA, inplace=True)
-    if hospital_id:
-        return df[df['Hospital_ID'] == hospital_id].to_dict('records')
-    return df.to_dict('records')
 
 def generate_hourly_graph():
     global current_day_initial_count, last_midnight_count
@@ -141,43 +115,38 @@ def list_patients():
 @app.route('/discharge/<patient_id>', methods=['POST'])
 def discharge_patient(patient_id):
     try:
-        data = pd.read_csv(CSV_FILE)
+        data = pd.read_csv("pat.csv")
         data[['Leave_Date', 'Leave_Time']] = data[['Leave_Date', 'Leave_Time']].fillna('NULL')
     
-        patient = data[data['Patient_ID'] == patient_id]
+        patient = data[data['Patient_ID'] == patient_id]  
         if patient.empty:
+            print(f"Patient {patient_id} not found")  
             return jsonify({"error": "Patient not found"}), 404
         if patient.iloc[0]['Leave_Date'] != 'NULL' or patient.iloc[0]['Leave_Time'] != 'NULL':
+            print(f"Patient {patient_id} is already discharged")  
             return jsonify({"error": "Patient is already discharged"}), 400
 
         current_time = datetime.now()
-        leave_date = current_time.strftime('%Y-%m-%d')
-        leave_time = current_time.strftime('%H:%M:%S')
+        leave_date = current_time.strftime('%Y-%m-%d')  
+        leave_time = current_time.strftime('%H:%M:%S')  
         data.loc[data['Patient_ID'] == patient_id, 'Leave_Date'] = leave_date
         data.loc[data['Patient_ID'] == patient_id, 'Leave_Time'] = leave_time
 
-        data.to_csv(CSV_FILE, index=False)
-        
-        # Broadcast discharge to all hospital users
-        hospital_id = patient.iloc[0]['Hospital_ID']
-        broadcast_patient_update(
-            hospital_id,
-            'discharge',
-            {
-                'Patient_ID': patient_id,
-                'Leave_Date': leave_date,
-                'Leave_Time': leave_time
-            }
-        )
-        
+        data.to_csv("pat.csv", index=False)
+        print(f"Patient {patient_id} discharged successfully")
         return jsonify({
             "status": "success",
             "message": f"Patient {patient_id} discharged successfully",
             "Leave_Date": leave_date,
             "Leave_Time": leave_time
         }), 200
+    except FileNotFoundError:
+        print("Patient data file not found")
+        return jsonify({"error": "Patient data file not found"}), 404
     except Exception as e:
+        print(f"Error discharging patient: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
 @app.route('/admitted-patients', methods=['GET'])
 def get_admitted_patients():
     try:
@@ -188,80 +157,16 @@ def get_admitted_patients():
         return jsonify({"num_admitted_patients": num_admitted_patients})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 @app.route('/add-patient', methods=['POST'])
 def add_patient():
     try:
         patient_data = request.json
         new_patient_df = pd.DataFrame([patient_data])
-        new_patient_df.to_csv(CSV_FILE, mode='a', header=False, index=False)
-        
-        hospital_id = patient_data.get('Hospital_ID')
-        if hospital_id:
-            # Broadcast new patient to all hospital users
-            broadcast_patient_update(hospital_id, 'add', patient_data)
-            
-            # Also update the graph data in real-time
-            socketio.emit('graph_update', {
-                'hospital_id': hospital_id,
-                'timestamp': datetime.now().isoformat()
-            }, room=hospital_id)
-        
-        return jsonify({
-            "status": "success",
-            "message": "Patient added successfully",
-            "patient": patient_data
-        }), 200
+        new_patient_df.to_csv("pat.csv", mode='a', header=False, index=False)
+        return jsonify({"status": "success", "message": "Patient added successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route('/sync-patients', methods=['GET'])
-def sync_patients():
-    try:
-        hospital_id = request.args.get('hospital_id')
-        patients = get_current_patients(hospital_id)
-        return jsonify({
-            "status": "success",
-            "patients": patients,
-            "count": len(patients)
-        }), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@socketio.on('connect')
-def handle_connect():
-    print(f"Client connected: {request.sid}")
-
-@socketio.on('register')
-def handle_register(data):
-    hospital_id = data.get('hospital_id')
-    if hospital_id:
-        hospital_connections[hospital_id].add(request.sid)
-        print(f"User registered for hospital {hospital_id}")
-        # Send current patient list on registration
-        patients = get_current_patients(hospital_id)
-        emit('initial_data', {
-            'patients': patients,
-            'hospital_id': hospital_id
-        })
-
-@socketio.on('request_update')
-def handle_request_update(data):
-    hospital_id = data.get('hospital_id')
-    if hospital_id and hospital_id in hospital_connections:
-        patients = get_current_patients(hospital_id)
-        emit('data_update', {
-            'patients': patients,
-            'hospital_id': hospital_id
-        }, room=request.sid)
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    for hospital_id, sockets in hospital_connections.items():
-        if request.sid in sockets:
-            sockets.remove(request.sid)
-            print(f"User disconnected from hospital {hospital_id}")
-            break
 
 if __name__ == '__main__':
-    socketio.run(app, port=5001, debug=True)
+    app.run(port=5001, debug=True)

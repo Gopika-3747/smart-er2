@@ -1,34 +1,34 @@
-// context/NotificationContext.js
-import { createContext, useState, useContext, useCallback } from 'react';
-import { useHospitalSocket } from '../hooks/useHospitalSocket';
+
+'use client';
+
+import { createContext, useContext, useState } from 'react';
 
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
-  
-  const addNotification = useCallback((notification) => {
-    const id = Date.now();
-    setNotifications(prev => [...prev, { id, ...notification }]);
+
+  const addNotification = (notification) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setNotifications((prev) => [...prev, { ...notification, id }]);
     
-    // Auto-remove after 5 seconds
+    // Auto-remove notification after 5 seconds
     setTimeout(() => {
-      removeNotification(id);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
     }, 5000);
-  }, []);
-
-  const removeNotification = useCallback((id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
-
-  // Setup WebSocket connection
-  useHospitalSocket(addNotification);
+  };
 
   return (
-    <NotificationContext.Provider value={{ notifications, addNotification, removeNotification }}>
+    <NotificationContext.Provider value={{ notifications, addNotification }}>
       {children}
     </NotificationContext.Provider>
   );
 };
 
-export const useNotification = () => useContext(NotificationContext);
+export const useNotification = () => {
+  const context = useContext(NotificationContext);
+  if (!context) {
+    throw new Error('useNotification must be used within a NotificationProvider');
+  }
+  return context;
+};
