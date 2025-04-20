@@ -21,15 +21,15 @@ const Sidebar = () => {
   return (
     <div 
       className={`sticky top-24 bottom-0 left-0 right-0 transition-all duration-300 ease-in-out ${isHovered ? 'w-48' : 'w-[3.8rem]'} 
-        bg-[#5d86b5] gap-2 bg-opacity-65 backdrop-blur-md text-gray-200 h-[80vh] 
-         m-1 mt-3 p-1 shadow-2xl rounded-r-2xl flex flex-col overflow-hidden`}
+        bg-[#5d86b5] bg-opacity-65 backdrop-blur-md text-gray-200 h-[80vh] 
+         m-1 p-1 shadow-2xl rounded-r-2xl flex justify-center flex-col overflow-hidden`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
        
       
       {/* Menu */}
-      <div className="flex flex-col gap-4 mt-20">
+      <div className="flex flex-col gap-6 ">
       {menuItems.map((item, index) => {
           const isActive = pathname === item.route;
 

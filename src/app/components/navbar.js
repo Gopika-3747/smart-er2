@@ -76,10 +76,10 @@ const Navbar = () => {
                             e.stopPropagation();
                             setDropdownOpen((prev) => !prev);
                         }}
-                        className="h-[12vh] font-semibold flex items-center pt-1 gap-1 text-[clamp(0.8rem,2vw,1.1rem)] text-white hover:opacity-80 transition"
+                        className="h-[12vh] font-semibold flex items-center pt-1 gap-2 text-[clamp(0.8rem,2vw,1.1rem)] text-white hover:opacity-80 transition"
                     >
                         {userName}
-                        <FaUserCircle size={30} />
+                        <span className="bg-black rounded-full"><FaUserCircle className="text-white" size={30} /></span>
                     </button>
 
                     {dropdownOpen && (
