@@ -68,20 +68,20 @@ const Predictions = () => {
       });
   };
 
-  const updatePredictions = (patientCount) => {
+  const updatePredictions = (todaysPrediction) => {
     let criticalCases = "Low";
     let bedAvailability = "High";
     
-    if (patientCount >= 15) {
+    if (todaysPrediction >= 15) {
       criticalCases = "High";
       bedAvailability = "Low";
-    } else if (patientCount >= 10) {
+    } else if (todaysPrediction >= 10) {
       criticalCases = "Moderate";
       bedAvailability = "Moderate";
     }
 
     setPredictions([
-      { id: 1, category: "Today's Patients", value: patientCount, color: "bg-blue-500" },
+      { id: 1, category: "Today's Patients", value: todaysPrediction, color: "bg-blue-500" },
       { id: 2, category: "Critical Cases", value: criticalCases, color: criticalCases === "High" ? "bg-red-500" : criticalCases === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
       { id: 3, category: "Bed Availability", value: bedAvailability, color: bedAvailability === "Low" ? "bg-red-500" : bedAvailability === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
     ]);

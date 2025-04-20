@@ -60,8 +60,8 @@ const RegistrationPage = () => {
   const verifyCredentials = async (role, credentials) => {
     try {
       const endpoint = role.toLowerCase() === 'admin' 
-        ? `${'http://localhost:5000'}}/api/verify-supervisor` 
-        : `${'http://localhost:5000'}/api/verify-admin`;
+        ? `http://localhost:5000/api/verify-supervisor` 
+        : `http://localhost:5000/api/verify-admin`;
   
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -138,7 +138,7 @@ const RegistrationPage = () => {
       }
   
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/register`, {
+      const response = await fetch(`http://localhost:5000/api/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
