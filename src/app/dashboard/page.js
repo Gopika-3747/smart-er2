@@ -47,6 +47,20 @@ const [showPopup, setShowPopup] = useState(false);
       }, 3000); // show for 3 sec
     }
   }, []);
+  useEffect(() => {
+    const hospitalId = "HOSPITAL_1"; // Get this from your app's state
+    const socket = new WebSocket(`ws://localhost:5001?hospital_id=${hospitalId}`);
+  
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.event === 'patient_update') {
+        setPatients(data.patients);
+      }
+    };
+  
+    return () => socket.close();
+  }, []);
+    
 
   const calculateErStatus = (currentPatients, maxCapacity) => {
     const percentage = (currentPatients / maxCapacity) * 100;
