@@ -6,6 +6,7 @@ from flask_cors import CORS
 import io
 import os
 import matplotlib
+import csv
 matplotlib.use('Agg')
 
 app = Flask(__name__)
@@ -14,6 +15,8 @@ CORS(app)
 CSV_FILE = "pat.csv"
 current_day_initial_count = None
 last_midnight_count = None
+notifications = []
+
 
 if not os.path.exists("pat.csv"):
     with open("pat.csv", 'w') as f:
@@ -160,13 +163,87 @@ def get_admitted_patients():
 
 @app.route('/add-patient', methods=['POST'])
 def add_patient():
+    clean_old_notifications()
     try:
         patient_data = request.json
         new_patient_df = pd.DataFrame([patient_data])
         new_patient_df.to_csv("pat.csv", mode='a', header=False, index=False)
+        
+        with open("notification.csv", "a", newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                patient_data.get("Hospital_ID"),
+                "alert",
+                f"New patient admitted: ID {patient_data.get('Patient_ID')}",
+                datetime.utcnow().isoformat()
+            ])
+
         return jsonify({"status": "success", "message": "Patient added successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+from datetime import timedelta
+
+import os
+
+@app.route('/notifications', methods=['GET'])
+def get_notifications():
+    clean_old_notifications()
+
+    hospital_id = request.args.get("hospitalID")
+    if not hospital_id:
+        return jsonify({"error": "hospitalID is required"}), 400
+
+    notifications = []
+    now = datetime.utcnow()
+    cutoff = now - timedelta(hours=24)
+
+    try:
+        # 🔒 Check if file exists
+        if not os.path.exists("notification.csv"):
+            with open("notification.csv", "w", newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(["hospitalID", "type", "message", "timestamp"])
+
+        with open("notification.csv", newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                timestamp = datetime.fromisoformat(row["timestamp"])
+                if row["hospitalID"] == hospital_id and timestamp > cutoff:
+                    notifications.append({
+                        "hospitalID": row["hospitalID"],
+                        "type": row["type"],
+                        "message": row["message"],
+                        "timestamp": timestamp.isoformat()
+                    })
+
+        notifications.sort(key=lambda x: x["timestamp"], reverse=True)
+        return jsonify(notifications)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def clean_old_notifications():
+    try:
+        rows = []
+        now = datetime.utcnow()
+        cutoff = now - timedelta(hours=24)
+
+        # Read all rows
+        with open("notification.csv", newline='') as f:
+            reader = csv.DictReader(f)
+            rows = [row for row in reader if datetime.fromisoformat(row["timestamp"]) > cutoff]
+
+        # Write only fresh notifications back
+        with open("notification.csv", "w", newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=["hospitalID", "type", "message", "timestamp"])
+            writer.writeheader()
+            writer.writerows(rows)
+    except Exception as e:
+        print("Error cleaning notifications:", e)
+
+
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)

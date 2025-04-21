@@ -1,0 +1,3 @@
+hospitalID,type,message,timestamp
+H001,alert,New patient admitted: ID P102,2025-04-21T00:58:59.798369
+H001,alert,New patient admitted: ID P059,2025-04-21T01:11:39.277951

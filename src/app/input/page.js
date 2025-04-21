@@ -2,11 +2,18 @@
 import { useState, useEffect } from "react";
 import Sidebar from '../components/sidebar';
 import Navbar from '../components/navbar';
+import NotificationToast from '../components/toast';
 
 const PatientEntry = () => {
   const [hospitalId, setHospitalId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState({ success: false, message: "" });
+  const [toast, setToast] = useState({ show: false, message: '' });
+  
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type }), 400000); // auto hide
+  };
   
   const [formData, setFormData] = useState({
     Patient_ID: "",

@@ -3,9 +3,17 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaCircleUser } from "react-icons/fa6";
+import NotificationToast from '../components/toast';
 
 const RegistrationPage = () => {
   const router = useRouter();
+
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+const showToast = (message, type = 'success') => {
+  setToast({ show: true, message, type });
+  setTimeout(() => setToast({ show: false, message: '', type }), 4000); // auto hide
+};
   
   const [formData, setFormData] = useState({
     userID: '', 
@@ -162,14 +170,36 @@ const RegistrationPage = () => {
       const data = await response.json();
   
       if (response.ok) {
-        alert('Registration request submitted successfully!');
-        router.push('/');
+        showToast('Registration request submitted successfully!', 'success');
+        setFormData({
+          userID: '',
+          firstName: '',
+          lastName: '',
+          email: '',
+          role: '',
+          password: '',
+          reenterPassword: '',
+          hospitalName: '',
+          hospitalID: '',
+        });
+      
+        setCredentials({
+          supervisorId: '',
+          supervisorPassword: '',
+          adminId: '',
+          adminPassword: '',
+        });
+      
+        setErrors({});
+        setCredentialError('');
       } else {
-        alert(data.message || 'Registration failed. Please try again.');
+        showToast(data.message || 'Registration failed. Please try again.', 'error');
+
       }
     } catch (err) {
       console.error('Error during registration:', err);
-      alert('An error occurred. Please try again.');
+      showToast('An error occurred. Please try again.', 'error');
+
     } finally {
       setIsLoading(false);
     }
@@ -177,6 +207,15 @@ const RegistrationPage = () => {
 
 
   return (
+    <>
+    {toast.show && (
+      <NotificationToast 
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ show: false, message: '', type: 'success' })}
+      />
+    )}
+    
     <div 
       className="flex items-center justify-center min-h-screen bg-cover bg-center bg-[#5d86b5] bg-opacity-60 backdrop-blur-sm"
     >
@@ -363,6 +402,7 @@ const RegistrationPage = () => {
         </div>
       </div>
     </div>
+    </>
   )
   };
 
