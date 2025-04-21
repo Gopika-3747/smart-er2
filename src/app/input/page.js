@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import Sidebar from '../components/sidebar';
 import Navbar from '../components/navbar';
-import NotificationToast from '../components/toast';
 
 const PatientEntry = () => {
   const [hospitalId, setHospitalId] = useState("");

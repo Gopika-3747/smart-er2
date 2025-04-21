@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
+import NotificationBell from '../notifications/page';
 import Sidebar from '../components/sidebar';
 import Navbar from '../components/navbar';
 import {
@@ -19,6 +20,7 @@ import {
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
+  const [hospitalId1, setHospitalId] = useState("");
   const [imageUrl, setImageUrl] = useState('');
   const router = useRouter();
   const [patients, setPatients] = useState([]);
@@ -48,7 +50,13 @@ const [showPopup, setShowPopup] = useState(false);
     }
   }, []);
   useEffect(() => {
-    const hospitalId = "HOSPITAL_1"; // Get this from your app's state
+    const storedHospitalId = localStorage.getItem("hospitalID");
+    if (storedHospitalId) {
+      setHospitalId(storedHospitalId);
+    }
+  }, []);
+  useEffect(() => {
+    const hospitalId = hospitalId1; // Get this from your app's state
     const socket = new WebSocket(`ws://localhost:5001?hospital_id=${hospitalId}`);
   
     socket.onmessage = (event) => {
@@ -148,7 +156,7 @@ const [showPopup, setShowPopup] = useState(false);
         throw new Error(`HTTP error! Status: ${response.status}`);
 
       }
-
+      fetchGraph();
       await fetchCurrentPatients();
       await fetchAdmittedPatients();
 
@@ -215,6 +223,7 @@ const [showPopup, setShowPopup] = useState(false);
     <div className="min-h-screen top-0 bg-opacity-80 backdrop-blur-sm bg-blue-100">
       
       <Navbar />
+      <NotificationBell hospitalId= {hospitalId1} />
       <div className="flex min-h-screen mt-5 w-full flex-wrap">
 
         <Sidebar />

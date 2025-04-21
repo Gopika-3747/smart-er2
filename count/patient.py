@@ -7,6 +7,13 @@ import io
 import os
 import matplotlib
 import csv
+from pymongo import MongoClient
+from bson import ObjectId
+
+# MongoDB setup
+client = MongoClient('mongodb+srv://shaheem2:Er9RHzQvT2Lhedzi@smart-er.s39qc.mongodb.net/smart-er?retryWrites=true&w=majority&appName=smart-er')
+db = client['smart_er']
+notifications_collection = db['notifications']
 matplotlib.use('Agg')
 
 app = Flask(__name__)
@@ -85,7 +92,6 @@ def generate_hourly_graph():
     plt.savefig(buf, format='png')
     buf.seek(0)
     plt.close()
-
     return buf
 
 def get_current_day_discharge_count(df):
@@ -137,12 +143,24 @@ def discharge_patient(patient_id):
 
         data.to_csv("pat.csv", index=False)
         print(f"Patient {patient_id} discharged successfully")
+        notification = {
+            "hospital_id": patient.iloc[0]['Hospital_ID'],
+            "type": "discharge",
+            "patient_id": patient_id,
+            "message": f"Patient discharged: {patient_id}",
+            "timestamp": datetime.utcnow(),
+            "read": False
+        }
+        notifications_collection.insert_one(notification)
         return jsonify({
+            "graph":"buf",
             "status": "success",
             "message": f"Patient {patient_id} discharged successfully",
             "Leave_Date": leave_date,
-            "Leave_Time": leave_time
+            "Leave_Time": leave_time,
+            "notification_id": str(notification['_id'])
         }), 200
+        
     except FileNotFoundError:
         print("Patient data file not found")
         return jsonify({"error": "Patient data file not found"}), 404
@@ -163,22 +181,23 @@ def get_admitted_patients():
 
 @app.route('/add-patient', methods=['POST'])
 def add_patient():
-    clean_old_notifications()
     try:
         patient_data = request.json
         new_patient_df = pd.DataFrame([patient_data])
         new_patient_df.to_csv("pat.csv", mode='a', header=False, index=False)
         
-        with open("notification.csv", "a", newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow([
-                patient_data.get("Hospital_ID"),
-                "alert",
-                f"New patient admitted: ID {patient_data.get('Patient_ID')}",
-                datetime.utcnow().isoformat()
-            ])
+        notification = {
+            "hospital_id": patient_data.get("Hospital_ID"),
+            "type": "admission",
+            "patient_id": patient_data.get("Patient_ID"),
+            "message": f"New patient admitted: {patient_data.get('Patient_ID')}",
+            "timestamp": datetime.utcnow(),
+            "read": False
+        }
+        notifications_collection.insert_one(notification)
 
-        return jsonify({"status": "success", "message": "Patient added successfully"}), 200
+
+        return jsonify({"status": "success", "message": "Patient added successfully","notification_id": str(notification['_id'])}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
@@ -188,62 +207,45 @@ import os
 
 @app.route('/notifications', methods=['GET'])
 def get_notifications():
-    clean_old_notifications()
-
-    hospital_id = request.args.get("hospitalID")
-    if not hospital_id:
-        return jsonify({"error": "hospitalID is required"}), 400
-
-    notifications = []
-    now = datetime.utcnow()
-    cutoff = now - timedelta(hours=24)
-
     try:
-        # 🔒 Check if file exists
-        if not os.path.exists("notification.csv"):
-            with open("notification.csv", "w", newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(["hospitalID", "type", "message", "timestamp"])
 
-        with open("notification.csv", newline='') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                timestamp = datetime.fromisoformat(row["timestamp"])
-                if row["hospitalID"] == hospital_id and timestamp > cutoff:
-                    notifications.append({
-                        "hospitalID": row["hospitalID"],
-                        "type": row["type"],
-                        "message": row["message"],
-                        "timestamp": timestamp.isoformat()
-                    })
+        hospital_id = request.args.get("hospitalID")
+        if not hospital_id:
+            return jsonify({"error": "hospitalID is required"}), 400
+    
 
-        notifications.sort(key=lambda x: x["timestamp"], reverse=True)
-        return jsonify(notifications)
-
+        notifications = list(notifications_collection.find({
+            "hospital_id": hospital_id,
+            "read": False
+        }).sort("timestamp", -1).limit(50))
+        
+        # Convert ObjectId to string
+        for notification in notifications:
+            notification['_id'] = str(notification['_id'])
+        
+        return jsonify({"notifications": notifications}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+     
 
-
-def clean_old_notifications():
+@app.route('/notifications/mark-read', methods=['POST'])
+def mark_notification_read():
     try:
-        rows = []
-        now = datetime.utcnow()
-        cutoff = now - timedelta(hours=24)
-
-        # Read all rows
-        with open("notification.csv", newline='') as f:
-            reader = csv.DictReader(f)
-            rows = [row for row in reader if datetime.fromisoformat(row["timestamp"]) > cutoff]
-
-        # Write only fresh notifications back
-        with open("notification.csv", "w", newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=["hospitalID", "type", "message", "timestamp"])
-            writer.writeheader()
-            writer.writerows(rows)
+        notification_id = request.json.get('notification_id')
+        if not notification_id:
+            return jsonify({"error": "notification_id is required"}), 400
+        
+        result = notifications_collection.update_one(
+            {"_id": ObjectId(notification_id)},
+            {"$set": {"read": True}}
+        )
+        
+        if result.modified_count == 0:
+            return jsonify({"error": "Notification not found"}), 404
+        
+        return jsonify({"status": "success"}), 200
     except Exception as e:
-        print("Error cleaning notifications:", e)
-
-
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)
