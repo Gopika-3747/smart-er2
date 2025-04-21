@@ -19,20 +19,20 @@ matplotlib.use('Agg')
 app = Flask(__name__)
 CORS(app)
 
-CSV_FILE = "pat.csv"
+CSV_FILE = "../pat.csv"
 current_day_initial_count = None
 last_midnight_count = None
 notifications = []
 
 
-if not os.path.exists("pat.csv"):
-    with open("pat.csv", 'w') as f:
+if not os.path.exists("../pat.csv"):
+    with open("../pat.csv", 'w') as f:
         f.write("Patient_ID,Hospital_ID,Urban_Rural,Gender,Age,Blood_Group,Triage_Level,Factor,Entry_Date,Entry_Time,Leave_Date,Leave_Time\n")
 
 def generate_hourly_graph():
     global current_day_initial_count, last_midnight_count
 
-    df = pd.read_csv("pat.csv")
+    df = pd.read_csv("../pat.csv")
     df.replace("NULL", pd.NA, inplace=True)
     
     def parse_datetime(date_col, time_col):
@@ -106,11 +106,11 @@ def get_graph():
 @app.route('/list', methods=['GET'])
 def list_patients():
     try:
-        data = pd.read_csv("pat.csv")
+        data = pd.read_csv("../pat.csv")
         data[['Leave_Date', 'Leave_Time']] = data[['Leave_Date', 'Leave_Time']].fillna('NULL')
         current_patients = data[(data['Leave_Date'] == 'NULL') & (data['Leave_Time'] == 'NULL')]
         patients_list = current_patients.to_dict(orient='records')
-        current_patients.to_csv("list.csv", index=False)
+        current_patients.to_csv("../list.csv", index=False)
         return jsonify({
             "status": "success",
             "count": len(patients_list),
@@ -124,7 +124,7 @@ def list_patients():
 @app.route('/discharge/<patient_id>', methods=['POST'])
 def discharge_patient(patient_id):
     try:
-        data = pd.read_csv("pat.csv")
+        data = pd.read_csv("../pat.csv")
         data[['Leave_Date', 'Leave_Time']] = data[['Leave_Date', 'Leave_Time']].fillna('NULL')
     
         patient = data[data['Patient_ID'] == patient_id]  
@@ -141,7 +141,7 @@ def discharge_patient(patient_id):
         data.loc[data['Patient_ID'] == patient_id, 'Leave_Date'] = leave_date
         data.loc[data['Patient_ID'] == patient_id, 'Leave_Time'] = leave_time
 
-        data.to_csv("pat.csv", index=False)
+        data.to_csv("../pat.csv", index=False)
         print(f"Patient {patient_id} discharged successfully")
         notification = {
     # "hospital_id": patient.iloc[0]['Hospital_ID'],  # Remove if not needed
@@ -171,7 +171,7 @@ def discharge_patient(patient_id):
 @app.route('/admitted-patients', methods=['GET'])
 def get_admitted_patients():
     try:
-        df = pd.read_csv("pat.csv")
+        df = pd.read_csv("../pat.csv")
         df.replace("NULL", pd.NA, inplace=True)
         admitted_patients = df[df["Leave_Date"].isna() & df["Leave_Time"].isna()]
         num_admitted_patients = admitted_patients.shape[0]
@@ -184,7 +184,7 @@ def add_patient():
     try:
         patient_data = request.json
         new_patient_df = pd.DataFrame([patient_data])
-        new_patient_df.to_csv("pat.csv", mode='a', header=False, index=False)
+        new_patient_df.to_csv("../pat.csv", mode='a', header=False, index=False)
         
         notification = {  # Remove if not needed
         "type": "admission",
