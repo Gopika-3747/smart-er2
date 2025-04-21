@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import ProfileModal from "./ProfileModal";
+import NotificationBell from '../context/NotificationContext';
 
 const Navbar = () => {
     const router = useRouter(); 
@@ -70,6 +71,7 @@ const Navbar = () => {
       </div>
 
                 <div className="relative">
+                    <NotificationBell/>
                     <button 
                         id="profile-menu" 
                         onClick={(e) => {
@@ -81,7 +83,7 @@ const Navbar = () => {
                         {userName}
                         <span className="bg-black rounded-full"><FaUserCircle className="text-white" size={30} /></span>
                     </button>
-
+                    
                     {dropdownOpen && (
                         <div className=" absolute right-0 rounded-lg mt-1 w-40 bg-blue-50 backdrop-blur-md shadow-lg z-50">
                             <button

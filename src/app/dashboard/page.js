@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuth from '../hooks/useAuth';
-import NotificationBell from '../context/NotificationContext';
+
 import Sidebar from '../components/sidebar';
 import Navbar from '../components/navbar';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -154,7 +154,7 @@ const Dashboard = () => {
       
       <div className="min-h-screen top-0 bg-opacity-80 backdrop-blur-sm bg-blue-100">
         <Navbar />
-        <NotificationBell />
+        
         
         <div className="flex min-h-screen mt-5 w-full flex-wrap">
           <Sidebar />
@@ -163,7 +163,7 @@ const Dashboard = () => {
             <div className="px-6 py-2 drop-shadow-lg">
               <h2 className="text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)]">ER Dashboard</h2>
             </div>
-
+        
             <div className="opacity-95 text-black p-6 flex justify-evenly items-center flex-wrap gap-4">
               {[
                 { name: 'Current ER Patients', value: metrics.currentPatients },
