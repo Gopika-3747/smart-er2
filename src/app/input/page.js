@@ -101,7 +101,7 @@ const PatientEntry = () => {
     <div className="min-h-screen bg-opacity-80 backdrop-blur-sm bg-blue-100">
       <Navbar/>
       
-      <div className="flex min-h-screen w-full flex-wrap">
+      <div className="flex min-h-screen mt-5 w-full flex-wrap">
       <Sidebar/>
       
       {/* Patient Entry Form Container */}

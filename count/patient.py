@@ -173,9 +173,19 @@ def get_admitted_patients():
     try:
         df = pd.read_csv("pat.csv")
         df.replace("NULL", pd.NA, inplace=True)
+        
+        # Get all admitted patients
         admitted_patients = df[df["Leave_Date"].isna() & df["Leave_Time"].isna()]
         num_admitted_patients = admitted_patients.shape[0]
-        return jsonify({"num_admitted_patients": num_admitted_patients})
+        
+        # Get critical patients (assuming 'Critical' is the triage level value)
+        critical_patients = admitted_patients[admitted_patients["Triage_Level"].str.lower() == "critical"]
+        num_critical_patients = critical_patients.shape[0]
+        
+        return jsonify({
+            "num_admitted_patients": num_admitted_patients,
+            "num_critical_patients": num_critical_patients
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -186,17 +196,42 @@ def add_patient():
         new_patient_df = pd.DataFrame([patient_data])
         new_patient_df.to_csv("pat.csv", mode='a', header=False, index=False)
         
-        notification = {  # Remove if not needed
-        "type": "admission",
-        "patient_id": patient_data.get("Patient_ID"),
-        "message": f"New patient admitted: {patient_data.get('Patient_ID')}",
-        "timestamp": datetime.utcnow(),
-        "read": False
+        # Create standard admission notification
+        admission_notification = {
+            "type": "admission",
+            "patient_id": patient_data.get("Patient_ID"),
+            "message": f"New patient admitted: {patient_data.get('Patient_ID')}",
+            "timestamp": datetime.utcnow(),
+            "read": False
         }
-        notifications_collection.insert_one(notification)
+        result = notifications_collection.insert_one(admission_notification)
+        notification_id = str(result.inserted_id)
+        
+        # Check for critical case (with proper error handling)
+        triage_level = str(patient_data.get("Triage_Level", "")).lower()
+        if triage_level == "critical":
+            critical_notification = {
+                "type": "Critical",  
+                "patient_id": patient_data.get("Patient_ID"),
+                "message": f"CRITICAL CASE ALERT: Patient {patient_data.get('Patient_ID')} requires immediate attention!",
+                "timestamp": datetime.utcnow(),
+                "read": False,
+                "priority": "high"
+            }
+            critical_result = notifications_collection.insert_one(critical_notification)
+            
+            return jsonify({
+                "status": "success",
+                "message": "Critical patient added successfully",
+                "notification_ids": [notification_id, str(critical_result.inserted_id)]
+            }), 200
 
-
-        return jsonify({"status": "success", "message": "Patient added successfully","notification_id": str(notification['_id'])}), 200
+        return jsonify({
+            "status": "success",
+            "message": "Patient added successfully",
+            "notification_id": notification_id
+        }), 200
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     

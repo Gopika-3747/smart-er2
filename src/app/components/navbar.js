@@ -70,8 +70,8 @@ const Navbar = () => {
        <p className="text-white text-[clamp(0.9rem,2vw,1.2rem)] font-sans font-semibold"> Welcome to {hospitalName}</p>
       </div>
 
-                <div className="relative">
-                    <NotificationBell/>
+                <div className="relative flex items-center gap-3">
+                    <NotificationBell  />
                     <button 
                         id="profile-menu" 
                         onClick={(e) => {
@@ -85,7 +85,7 @@ const Navbar = () => {
                     </button>
                     
                     {dropdownOpen && (
-                        <div className=" absolute right-0 rounded-lg mt-1 w-40 bg-blue-50 backdrop-blur-md shadow-lg z-50">
+                        <div className=" absolute right-0 top-16 rounded-lg w-40 bg-white backdrop-blur-md shadow-lg z-50">
                             <button
                                 onClick={() => {
                                     setIsProfileOpen(true);

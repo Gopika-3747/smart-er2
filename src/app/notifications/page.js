@@ -4,11 +4,25 @@ import Navbar from '../components/navbar';
 import { useState, useEffect } from "react";
 import { FaBell, FaCheckCircle, FaExclamationTriangle, FaInfoCircle } from "react-icons/fa";
 
+
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+   const [todaysPrediction, setTodaysPrediction] = useState(null);
+    const [predictions, setPredictions] = useState([
+    ]);
+    const fetchTodaysPrediction = () => {
+      fetch('http://localhost:5005/todays-prediction')
+        .then(response => response.json())
+        .then(data => {
+          setTodaysPrediction(data.predicted_patient_count);
+        })
+        .catch(error => {
+          console.error('Error fetching today\'s prediction:', error);
+        });
+    };
+    const percentage = (((todaysPrediction/130)*100).toFixed(2))
   // Fetch notifications from backend
   const fetchNotifications = async () => {
     setLoading(true);
@@ -61,10 +75,10 @@ const Notifications = () => {
           color: 'bg-green-500',
           icon: <FaCheckCircle className="text-2xl mr-3" />
         };
-      case 'alert':
+      case 'Critical':
       default:
         return { 
-          color: 'bg-red-500',
+          color: 'bg-red-400 text-red-500',
           icon: <FaExclamationTriangle className="text-2xl mr-3" />
         };
     }
@@ -72,6 +86,7 @@ const Notifications = () => {
 
   useEffect(() => {
     fetchNotifications();
+    fetchTodaysPrediction();
     const interval = setInterval(fetchNotifications, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
   }, []);
@@ -79,11 +94,11 @@ const Notifications = () => {
   return (
     <div className="min-h-screen bg-opacity-80 backdrop-blur-sm bg-blue-100">
       <Navbar/>
-      <div className="flex min-h-screen w-full flex-wrap">
+      <div className="flex mt-5 min-h-screen w-full flex-wrap">
         <Sidebar />
         <div className="flex-1 ml-3 mr-1">
           <div className="flex-1 flex justify-between items-center overflow-hidden p-3 drop-shadow-xl">
-            <h1 className="text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)] drop-shadow-lg mt-4">
+            <h1 className="text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)] drop-shadow-lg ">
               Notifications
             </h1>
             <button 
@@ -97,6 +112,7 @@ const Notifications = () => {
 
           {/* Notifications List */}
           <div className="mt-6 bg-white p-6 rounded-lg shadow-lg">
+          <div className="px-4 py-2 bg-red-100 text-gray-500">Todays Overcrowding prediction:{percentage}%</div>
             <h2 className="text-xl font-semibold mb-4">Recent Alerts</h2>
             
             {loading ? (
@@ -105,11 +121,13 @@ const Notifications = () => {
                 <p className="mt-2 text-gray-600">Loading notifications...</p>
               </div>
             ) : error ? (
+              
               <div className="bg-red-100 text-red-800 p-4 rounded-md">
                 Error: {error}
               </div>
             ) : notifications.length > 0 ? (
               <div className="space-y-4">
+                
                 {notifications.map((notification) => {
                   const style = getNotificationStyle(notification.type);
                   return (

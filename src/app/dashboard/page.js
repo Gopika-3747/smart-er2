@@ -18,10 +18,10 @@ const Dashboard = () => {
   
   const [metrics, setMetrics] = useState({
     currentPatients: 0,
-    maxbed: 130,
+    maxbed: 100,
     bedAvailability: 0,
     erStatus: 'Moderate',
-    staffAvailability: 'High',
+    Critical_percentage: 0,
   });
 
   const [showPopup1, setShowPopup1] = useState(false);
@@ -70,7 +70,8 @@ const Dashboard = () => {
         ...prev,
         currentPatients: data.num_admitted_patients,
         bedAvailability: prev.maxbed - data.num_admitted_patients,
-        erStatus: calculateErStatus(data.num_admitted_patients, prev.maxbed)
+        erStatus: calculateErStatus(data.num_admitted_patients, prev.maxbed),
+        Critical_percentage:((data.num_critical_patients/data.num_admitted_patients ))
       }));
     } catch (error) {
       console.error('Error:', error);
@@ -133,8 +134,8 @@ const Dashboard = () => {
         return value <= 5 ? 'border-red-500' : value <= 10 ? 'border-yellow-400' : 'border-green-500';
       case 'ER Status':
         return value === 'High' ? 'border-red-500' : value === 'Moderate' ? 'border-yellow-400' : 'border-green-500';
-      case 'Staff Availability':
-        return value === 'Low' ? 'border-red-500' : value === 'Moderate' ? 'border-yellow-400' : 'border-green-500';
+      case 'Critical Percentage':
+        return value >=75 ? 'border-red-500' : value <= 25 ? 'border-yellow-400' : 'border-green-500';
       default: return 'border-blue-500';
     }
   };
@@ -169,7 +170,7 @@ const Dashboard = () => {
                 { name: 'Current ER Patients', value: metrics.currentPatients },
                 { name: 'Bed Availability', value: metrics.bedAvailability },
                 { name: 'ER Status', value: metrics.erStatus },
-                { name: 'Staff Availability', value: metrics.staffAvailability },
+                { name: 'Critical Percentage', value: metrics.Critical_percentage+"%" },
               ].map((item, index) => (
                 <div key={index} className={`hover:shadow-2xl shadow-lg ${getBoxColor(item.name, item.value)} bg-[#fffeef] flex flex-col gap-2 border-t-[12px] transform transition duration-300 ease-in-out hover:scale-[1.1] h-[clamp(150px,15vh,300px)] w-[clamp(150px,15vw,300px)] justify-between items-center p-6 rounded-3xl rounded-t-none shadow-xl`}>
                   <span className="text-[clamp(1rem,2vw,1.1rem)] text-center font-medium">{item.name}</span>

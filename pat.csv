@@ -29,3 +29,6 @@ P0221,H001,Rural,Male,60,O+,High,drown,2025-04-20,22:33,2025-04-21,19:43:50
 P035,H001,Urban,Female,56,B+,Medium,pandemic,2025-04-20,22:51,2025-04-20,22:52:16
 P039,H001,Urban,Male,50,B+,Critical,pandemic,2025-04-21,23:18,NULL,NULL
 P030,H001,Urban,Female,30,O+,High,accident,2025-04-21,23:25,NULL,NULL
+P040,H001,Urban,Female,70,B-,Critical,accident,2025-04-22,00:10,NULL,NULL
+P042,H001,Urban,Female,30,B+,Critical,crime,2025-04-22,00:26,NULL,NULL
+P046,H001,Urban,Male,40,A+,Critical,crime,2025-04-22,00:31,2025-04-22,02:39:35

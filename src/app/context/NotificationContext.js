@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { IoIosNotifications } from "react-icons/io";
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
@@ -62,7 +63,7 @@ const NotificationBell = () => {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
+    const interval = setInterval(fetchNotifications, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -70,20 +71,13 @@ const NotificationBell = () => {
     <div className="relative">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-full hover:bg-gray-200 relative"
+        className=" rounded-full relative"
         disabled={loading}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
+        <span className='mt-1 flex justify-center items-center rounded-full p-1'><IoIosNotifications size={30} className='hover:opacity-60 text-gray-800'/></span>
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
             {unreadCount}
-          </span>
-        )}
-        {loading && (
-          <span className="absolute top-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-            ...
           </span>
         )}
       </button>
@@ -95,7 +89,7 @@ const NotificationBell = () => {
       )}
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg overflow-hidden z-50">
+        <div className="absolute right-10 top-[-8px] mt-2 w-72 bg-white rounded-md shadow-lg overflow-hidden z-50">
           <div className="py-1">
             {loading ? (
               <div className="px-4 py-2 text-gray-500">Loading...</div>
