@@ -144,12 +144,12 @@ def discharge_patient(patient_id):
         data.to_csv("pat.csv", index=False)
         print(f"Patient {patient_id} discharged successfully")
         notification = {
-            "hospital_id": patient.iloc[0]['Hospital_ID'],
-            "type": "discharge",
-            "patient_id": patient_id,
-            "message": f"Patient discharged: {patient_id}",
-            "timestamp": datetime.utcnow(),
-            "read": False
+    # "hospital_id": patient.iloc[0]['Hospital_ID'],  # Remove if not needed
+        "type": "discharge",
+        "patient_id": patient_id,
+        "message": f"Patient discharged: {patient_id}",
+        "timestamp": datetime.utcnow(),
+        "read": False
         }
         notifications_collection.insert_one(notification)
         return jsonify({
@@ -186,13 +186,12 @@ def add_patient():
         new_patient_df = pd.DataFrame([patient_data])
         new_patient_df.to_csv("pat.csv", mode='a', header=False, index=False)
         
-        notification = {
-            "hospital_id": patient_data.get("Hospital_ID"),
-            "type": "admission",
-            "patient_id": patient_data.get("Patient_ID"),
-            "message": f"New patient admitted: {patient_data.get('Patient_ID')}",
-            "timestamp": datetime.utcnow(),
-            "read": False
+        notification = {  # Remove if not needed
+        "type": "admission",
+        "patient_id": patient_data.get("Patient_ID"),
+        "message": f"New patient admitted: {patient_data.get('Patient_ID')}",
+        "timestamp": datetime.utcnow(),
+        "read": False
         }
         notifications_collection.insert_one(notification)
 
@@ -208,14 +207,8 @@ import os
 @app.route('/notifications', methods=['GET'])
 def get_notifications():
     try:
-
-        hospital_id = request.args.get("hospitalID")
-        if not hospital_id:
-            return jsonify({"error": "hospitalID is required"}), 400
-    
-
+        # Get all unread notifications without hospital ID filtering
         notifications = list(notifications_collection.find({
-            "hospital_id": hospital_id,
             "read": False
         }).sort("timestamp", -1).limit(50))
         
@@ -226,7 +219,6 @@ def get_notifications():
         return jsonify({"notifications": notifications}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-     
 
 @app.route('/notifications/mark-read', methods=['POST'])
 def mark_notification_read():

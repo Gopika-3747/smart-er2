@@ -2,7 +2,7 @@ Patient_ID,Hospital_ID,Urban_Rural,Gender,Age,Blood_Group,Triage_Level,Factor,En
 P001,H001,Urban,Male,87,A-,Critical,Crime,2025-03-26,05:22,2025-03-29,22:08:36
 P002,H001,Urban,Male,14,B-,Low,Event,2025-03-26,02:37,2025-04-03,22:23:36
 P003,H001,Urban,Other,27,B+,Low,Epidemic,2025-03-26,18:07,2025-04-20,22:29:11
-P004,H001,Rural,Male,50,AB-,Medium,Lifestyle,2025-03-26,22:43,NULL,NULL
+P004,H001,Rural,Male,50,AB-,Medium,Lifestyle,2025-03-26,22:43,2025-04-21,23:19:28
 P005,H001,Rural,Other,12,B+,Medium,Weather,2025-03-26,17:46,2025-04-03,22:26:01
 P006,H001,Rural,Other,29,A-,Medium,Lifestyle,2025-03-26,07:29,NULL,NULL
 P007,H001,Rural,Female,79,O-,Critical,Traffic,2025-03-26,03:54,2025-03-26,08:45
@@ -27,3 +27,4 @@ P033,H001,Urban,Female,46,AB+,Medium,crime,2025-04-20,22:28,2025-04-20,22:30:09
 P034,H001,Urban,Female,79,B+,High,accident,2025-04-20,22:31,2025-04-21,20:46:43
 P0221,H001,Rural,Male,60,O+,High,drown,2025-04-20,22:33,2025-04-21,19:43:50
 P035,H001,Urban,Female,56,B+,Medium,pandemic,2025-04-20,22:51,2025-04-20,22:52:16
+P039,H001,Urban,Male,50,B+,Critical,pandemic,2025-04-21,23:18,NULL,NULL
