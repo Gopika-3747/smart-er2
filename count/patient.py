@@ -12,7 +12,7 @@ from bson import ObjectId
 
 # MongoDB setup
 client = MongoClient('mongodb+srv://shaheem2:Er9RHzQvT2Lhedzi@smart-er.s39qc.mongodb.net/smart-er?retryWrites=true&w=majority&appName=smart-er')
-db = client['smart_er']
+db = client['smart-er']
 notifications_collection = db['notifications']
 matplotlib.use('Agg')
 
