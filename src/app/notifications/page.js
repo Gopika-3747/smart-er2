@@ -1,120 +1,61 @@
-import React, { useState, useEffect } from 'react';
+"use client";
+import Sidebar from '../components/sidebar';
+import Navbar from '../components/navbar';
 
-const NotificationBell = ({ hospitalId }) => {
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const fetchNotifications = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`http://localhost:5001/notifications?hospital_id=${hospitalId}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Ensure data.notifications exists and is an array
-      const receivedNotifications = Array.isArray(data?.notifications) ? data.notifications : [];
-      
-      setNotifications(receivedNotifications);
-      setUnreadCount(receivedNotifications.filter(n => !n.read).length);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      setError(error.message);
-      setNotifications([]);
-      setUnreadCount(0);
-    } finally {
-      setLoading(false);
-    }
-  };
+import { useState } from "react";
+import { FaBell, FaCheckCircle, FaExclamationTriangle, FaInfoCircle } from "react-icons/fa";
 
-  const markAsRead = async (notificationId) => {
-    try {
-      const response = await fetch('http://localhost:5001/notifications/mark-read', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ notification_id: notificationId }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to mark notification as read');
-      }
-      
-      fetchNotifications(); // Refresh notifications
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-      setError(error.message);
-    }
-  };
+const Notifications = () => {
+  // Mock notifications data
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: "alert", message: "Emergency room overload detected!", color: "bg-red-500", icon: <FaExclamationTriangle /> },
+    { id: 2, type: "update", message: "New shift schedule available.", color: "bg-blue-500", icon: <FaInfoCircle /> },
+    { id: 3, type: "reminder", message: "Patient check-up pending for Room 203.", color: "bg-yellow-500", icon: <FaBell /> },
+  ]);
 
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, [hospitalId]);
+  // Function to clear notifications
+  const clearNotifications = () => setNotifications([]);
 
   return (
-    <div className="relative">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-full hover:bg-gray-200 relative"
-        disabled={loading}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-        {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-            {unreadCount}
-          </span>
-        )}
-        {loading && (
-          <span className="absolute top-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-            ...
-          </span>
-        )}
-      </button>
+    <div className="min-h-screen bg-opacity-80 backdrop-blur-sm bg-blue-100 ">
+        <Navbar/>
+      {/* Header */}
+      <div className="flex min-h-screen w-full flex-wrap">
+      <Sidebar />
+      <div className="flex-1 ml-3 mr-1">
+      <div className="flex-1 flex justify-between items-center overflow-hidden p-3 drop-shadow-xl">
+      
+        <h1 className="text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)] drop-shadow-lg mt-4"> Notifications
+        </h1>
+        <button 
+          className="flex items-center gap-2 p-3 text-green-500 bg-green-100 hover:bg-blue-200 rounded-md shadow-md"
+          onClick={clearNotifications}
+        >
+          <FaCheckCircle /> Mark all as read
+        </button>
+      </div>
 
-      {error && (
-        <div className="absolute right-0 mt-2 w-72 bg-red-100 text-red-800 p-2 rounded-md">
-          Error: {error}
-        </div>
-      )}
-
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg overflow-hidden z-50">
-          <div className="py-1">
-            {loading ? (
-              <div className="px-4 py-2 text-gray-500">Loading notifications...</div>
-            ) : notifications.length === 0 ? (
-              <div className="px-4 py-2 text-gray-500">No new notifications</div>
-            ) : (
-              notifications.map(notification => (
-                <div 
-                  key={notification._id} 
-                  className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
-                  onClick={() => markAsRead(notification._id)}
-                >
-                  <div className="font-medium">{notification.message}</div>
-                  <div className="text-xs text-gray-500">
-                    {new Date(notification.timestamp).toLocaleString()}
-                  </div>
-                </div>
-              ))
-            )}
+      {/* Notifications List */}
+      <div className="mt-6 bg-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-xl font-semibold mb-4">Recent Alerts</h2>
+        {notifications.length > 0 ? (
+          <div className="space-y-4">
+            {notifications.map((item) => (
+              <div key={item.id} className={`flex items-center p-4 text-white rounded-lg ${item.color} shadow-md`}>
+                <span className="text-2xl mr-3">{item.icon}</span>
+                <p className="text-lg">{item.message}</p>
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-gray-500 text-center">No new notifications</p>
+        )}
+      </div>
+      </div>
+      </div>
     </div>
   );
 };
 
-export default NotificationBell;
+export default Notifications;
