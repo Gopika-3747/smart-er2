@@ -21,9 +21,6 @@ const Predictions = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [todaysPrediction, setTodaysPrediction] = useState(null);
   const [predictions, setPredictions] = useState([
-    { id: 1, category: "Today's Patients", value: "Loading...", color: "bg-blue-500" },
-    { id: 2, category: "Critical Cases", value: "Loading...", color: "bg-yellow-500" },
-    { id: 3, category: "Bed Availability", value: "Loading...", color: "bg-green-500" },
   ]);
 
   const months = [
@@ -69,24 +66,34 @@ const Predictions = () => {
   };
 
   const updatePredictions = (todaysPrediction) => {
+    // Check if prediction is still loading or not available
+    if (todaysPrediction === null || todaysPrediction === undefined) {
+      setPredictions([
+        { id: 1, category: "Today's Patients", value: "Loading...", color: "bg-blue-500" },
+        { id: 2, category: "Critical Cases", value: "Loading...", color: "bg-yellow-500" },
+        { id: 3, category: "Bed Availability", value: "Loading...", color: "bg-green-500" },
+      ]);
+      return;
+    }
+    const percentage = (((todaysPrediction/130)*100)|0);
+    
     let criticalCases = "Low";
     let bedAvailability = "High";
     
-    if (todaysPrediction >= 15) {
+    if (percentage >= 75) {
       criticalCases = "High";
       bedAvailability = "Low";
-    } else if (todaysPrediction >= 10) {
+    } else if (percentage >= 25) {
       criticalCases = "Moderate";
       bedAvailability = "Moderate";
     }
-
+  
     setPredictions([
-      { id: 1, category: "Today's Patients", value: todaysPrediction, color: "bg-blue-500" },
+      { id: 1, category: "Today's Patients", value: percentage+"%", color: "bg-blue-500" },
       { id: 2, category: "Critical Cases", value: criticalCases, color: criticalCases === "High" ? "bg-red-500" : criticalCases === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
-      { id: 3, category: "Bed Availability", value: bedAvailability, color: bedAvailability === "Low" ? "bg-red-500" : bedAvailability === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
+      { id: 3, category: "Factor", value: "accident", color: bedAvailability === "Low" ? "bg-red-500" : bedAvailability === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
     ]);
   };
-
   const handleDownload = () => {
     if (!imageUrl) return;
     
@@ -100,6 +107,7 @@ const Predictions = () => {
 
   useEffect(() => {
     fetchGraph(selectedMonth);
+    fetchTodaysPrediction();
   }, [selectedMonth]);
 
   const handleMonthChange = (e) => {

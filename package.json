@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev --turbopack\" \"node ./src/app/backend/server.js\" \"python ./count/patient.py\" \"python ./count/display.py\"\"python ./count/update.py\"",
+    "dev": "concurrently \"next dev --turbopack\" \"node ./src/app/backend/server.js\" \"python ./count/patient.py\" \"python ./count/display.py\" \"python ./count/update.py\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

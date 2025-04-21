@@ -27,7 +27,7 @@ const Dashboard = () => {
   
   const [metrics, setMetrics] = useState({
     currentPatients: 0,
-    maxbed: 20,
+    maxbed: 130,
     bedAvailability: 0,
     erStatus: 'Moderate',
     staffAvailability: 'High',
@@ -146,7 +146,7 @@ const [showPopup, setShowPopup] = useState(false);
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
-        
+
       }
 
       await fetchCurrentPatients();
