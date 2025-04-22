@@ -170,7 +170,7 @@ const Dashboard = () => {
                 { name: 'Current ER Patients', value: metrics.currentPatients },
                 { name: 'Bed Availability', value: metrics.bedAvailability },
                 { name: 'ER Status', value: metrics.erStatus },
-                { name: 'Critical Percentage', value: metrics.Critical_percentage+"%" },
+                { name: 'Critical Percentage', value: metrics.Critical_percentage.toFixed(2)+"%" },
               ].map((item, index) => (
                 <div key={index} className={`hover:shadow-2xl shadow-lg ${getBoxColor(item.name, item.value)} bg-[#fffeef] flex flex-col gap-2 border-t-[12px] transform transition duration-300 ease-in-out hover:scale-[1.1] h-[clamp(150px,15vh,300px)] w-[clamp(150px,15vw,300px)] justify-between items-center p-6 rounded-3xl rounded-t-none shadow-xl`}>
                   <span className="text-[clamp(1rem,2vw,1.1rem)] text-center font-medium">{item.name}</span>

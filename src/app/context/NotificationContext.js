@@ -89,7 +89,7 @@ const NotificationBell = () => {
       )}
 
       {isOpen && (
-        <div className="absolute right-10 top-[-8px] mt-2 w-72 bg-white rounded-md shadow-lg overflow-hidden z-50">
+        <div className="absolute right-10 top-[-8px] mt-2 w-72 max-h-[199px] bg-white rounded-md shadow-lg overflow-hidden z-50">
           <div className="py-1">
             {loading ? (
               <div className="px-4 py-2 text-gray-500">Loading...</div>

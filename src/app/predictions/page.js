@@ -72,8 +72,8 @@ const Predictions = () => {
     // Check if prediction is still loading or not available
     if (todaysPrediction === null || todaysPrediction === undefined) {
       setPredictions([
-        { id: 1, category: "Today's Patient percentage", value: "Loading...", color: "bg-blue-500" },
-        { id: 2, category: "Critical Cases", value: "Loading...", color: "bg-yellow-500" },
+        { id: 1, category: "Today's Patient Prediction", value: "Loading...", color: "bg-blue-500" },
+        { id: 2, category: "Expected Critical Cases", value: "Loading...", color: "bg-yellow-500" },
         { id: 3, category: "Extra Bed Required", value: "Loading...", color: "bg-green-500" },
       ]);
       return;
@@ -81,7 +81,7 @@ const Predictions = () => {
     const percentage = (((todaysPrediction/130)*100)|0);
     
     let criticalCases = "Low";
-    let bedAvailability =todaysPrediction>100? ( todaysPrediction-100) : (100-todaysPrediction);
+    let bedAvailability =todaysPrediction>100? ( todaysPrediction-100) : "NULL";
     
     if (percentage >= 75) {
       criticalCases = "High";
@@ -91,9 +91,9 @@ const Predictions = () => {
     }
 
     setPredictions([
-      { id: 1, category: "Today's Patients percentage", value: percentage+"%", color: "bg-blue-500" },
-      { id: 2, category: "Critical Cases", value: criticalCases, color: criticalCases === "High" ? "bg-red-500" : criticalCases === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
-      { id: 3, category: "Extra Bed Required", value: bedAvailability, color: bedAvailability === "Low" ? "bg-red-500" : bedAvailability === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
+      { id: 1, category: "Today's Patient Prediction", value: percentage+"%", color: "bg-blue-500" },
+      { id: 2, category: "Expected Critical Cases", value: criticalCases, color: criticalCases === "High" ? "bg-red-500" : criticalCases === "Moderate" ? "bg-yellow-400" : "bg-green-500" },
+      { id: 3, category: "Extra Bed Required", value: bedAvailability, color: bedAvailability === "Low" ? "bg-red-500" : bedAvailability === "Moderate" ? "bg-yellow-400" : "bg-green-500" },
     ]);
   };
 
@@ -168,7 +168,7 @@ const Predictions = () => {
         </div>
 
         {/* Main Content */}
-        <div className="my-6 bg-white p-6 rounded-lg shadow-lg">
+        <div className="mr-3 mb-3 bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-xl font-semibold mb-4">Prediction Overview</h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

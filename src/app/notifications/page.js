@@ -3,6 +3,8 @@ import Sidebar from '../components/sidebar';
 import Navbar from '../components/navbar';
 import { useState, useEffect } from "react";
 import { FaBell, FaCheckCircle, FaExclamationTriangle, FaInfoCircle } from "react-icons/fa";
+import { format } from 'timeago.js';
+
 
 
 const Notifications = () => {
@@ -67,18 +69,18 @@ const Notifications = () => {
     switch(type) {
       case 'admission':
         return { 
-          color: 'bg-blue-500',
+          color: 'bg-blue-100 text-blue-500',
           icon: <FaInfoCircle className="text-2xl mr-3" />
         };
       case 'discharge':
         return { 
-          color: 'bg-green-500',
+          color: 'bg-green-100 text-green-500',
           icon: <FaCheckCircle className="text-2xl mr-3" />
         };
       case 'Critical':
       default:
         return { 
-          color: 'bg-red-400 text-red-500',
+          color: 'bg-red-100 text-red-500',
           icon: <FaExclamationTriangle className="text-2xl mr-3" />
         };
     }
@@ -111,15 +113,13 @@ const Notifications = () => {
           </div>
 
           {/* Notifications List */}
-          <div className="mt-6 bg-white p-6 rounded-lg shadow-lg">
-          <div className="px-4 py-2 bg-red-100 text-gray-500">Todays Overcrowding prediction:{percentage}%</div>
+          <div className="mt-5 mb-3 mx-3 bg-white p-6 rounded-lg shadow-lg flex flex-col gap-3 ">
+          
             <h2 className="text-xl font-semibold mb-4">Recent Alerts</h2>
             
+            <div className="px-4 py-2 bg-red-100 text-gray-500">Todays Overcrowding prediction:{percentage}%</div>
             {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-                <p className="mt-2 text-gray-600">Loading notifications...</p>
-              </div>
+              ""
             ) : error ? (
               
               <div className="bg-red-100 text-red-800 p-4 rounded-md">
@@ -133,20 +133,18 @@ const Notifications = () => {
                   return (
                     <div 
                       key={notification._id} 
-                      className={`flex items-center p-4 text-white rounded-lg ${style.color} shadow-md`}
+                      className={`flex items-center justify-between p-4 rounded-lg ${style.color} shadow-md`}
                     >
+                      
+                      <div className='flex justify-between items-center'>
                       {style.icon}
-                      <div>
                         <p className="text-lg">{notification.message}</p>
-                        <p className="text-sm opacity-80">
-                          {new Date(notification.timestamp).toLocaleString()}
-                        </p>
-                        {!notification.read && (
-                          <span className="inline-block mt-1 text-xs bg-white text-black px-2 py-1 rounded-full">
-                            New
-                          </span>
-                        )}
+                        
+                        
                       </div>
+                      <p className="text-sm opacity-80 text-gray-500">
+                          {format(notification.timestamp).toLocaleString()}
+                        </p>
                     </div>
                   );
                 })}
