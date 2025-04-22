@@ -10,7 +10,7 @@ import zipfile
 class DischargedPatientProcessor:
     def __init__(self):
         # Configuration
-        self.csv_file = 'pat.csv'
+        self.csv_file = '../../pat.csv'
         self.local_backup_dir = 'csv_backups'
         
         # Field names configuration
