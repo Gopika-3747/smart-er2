@@ -63,7 +63,7 @@ def generate_hourly_graph():
 
     hours = list(range(0, 25))
     patient_counts = [prevc]
-    for hour in range(1, current_hour + 1):
+    for hour in range(1, current_hour + 2):
         entry_count = today_entries[(today_entries["Entry_Datetime"].dt.hour >= hour - 1) & 
                                     (today_entries["Entry_Datetime"].dt.hour < hour)].shape[0]
         leave_count = today_leaves[(today_leaves["Leave_Datetime"].dt.hour >= hour - 1) & 
