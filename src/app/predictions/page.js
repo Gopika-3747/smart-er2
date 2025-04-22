@@ -21,6 +21,9 @@ const Predictions = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [todaysPrediction, setTodaysPrediction] = useState(null);
   const [predictions, setPredictions] = useState([
+    { id: 1, category: "Today's Patients", value: "Loading...", color: "bg-blue-500" },
+    { id: 2, category: "Critical Cases", value: "Loading...", color: "bg-yellow-500" },
+    { id: 3, category: "Bed Availability", value: "Loading...", color: "bg-green-500" },
   ]);
 
   const months = [
@@ -69,31 +72,31 @@ const Predictions = () => {
     // Check if prediction is still loading or not available
     if (todaysPrediction === null || todaysPrediction === undefined) {
       setPredictions([
-        { id: 1, category: "Today's Patients", value: "Loading...", color: "bg-blue-500" },
+        { id: 1, category: "Today's Patient percentage", value: "Loading...", color: "bg-blue-500" },
         { id: 2, category: "Critical Cases", value: "Loading...", color: "bg-yellow-500" },
-        { id: 3, category: "Bed Availability", value: "Loading...", color: "bg-green-500" },
+        { id: 3, category: "Extra Bed Required", value: "Loading...", color: "bg-green-500" },
       ]);
       return;
     }
     const percentage = (((todaysPrediction/130)*100)|0);
     
     let criticalCases = "Low";
-    let bedAvailability = "High";
+    let bedAvailability =todaysPrediction>100? ( todaysPrediction-100) : (100-todaysPrediction);
     
     if (percentage >= 75) {
       criticalCases = "High";
-      bedAvailability = "Low";
+
     } else if (percentage >= 25) {
       criticalCases = "Moderate";
-      bedAvailability = "Moderate";
     }
-  
+
     setPredictions([
-      { id: 1, category: "Today's Patients", value: percentage+"%", color: "bg-blue-500" },
+      { id: 1, category: "Today's Patients percentage", value: percentage+"%", color: "bg-blue-500" },
       { id: 2, category: "Critical Cases", value: criticalCases, color: criticalCases === "High" ? "bg-red-500" : criticalCases === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
-      { id: 3, category: "Factor", value: "accident", color: bedAvailability === "Low" ? "bg-red-500" : bedAvailability === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
+      { id: 3, category: "Extra Bed Required", value: bedAvailability, color: bedAvailability === "Low" ? "bg-red-500" : bedAvailability === "Moderate" ? "bg-yellow-500" : "bg-green-500" },
     ]);
   };
+
   const handleDownload = () => {
     if (!imageUrl) return;
     
@@ -122,10 +125,10 @@ const Predictions = () => {
   return (
     <div className="min-h-screen bg-opacity-80 backdrop-blur-sm bg-blue-100 ">
       <Navbar/>
-      <div className="flex min-h-screen w-full flex-wrap">
+      <div className="flex min-h-screen mt-5 w-full flex-wrap">
       <Sidebar />
       
-      <div className="flex-1 mt-7 ml-3 mr-1">
+      <div className="flex-1 ml-3 mr-1">
         {/* Header */}
         <div className="flex justify-between items-center p-3 drop-shadow-lg ">
           <h1 className="flex items-center text-gray-600 font-bold text-[clamp(1.5rem,3vw,2rem)]">
