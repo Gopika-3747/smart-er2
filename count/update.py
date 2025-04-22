@@ -14,13 +14,13 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 connected_clients = {}
 
 # Path to your CSV file
-CSV_FILE = '../../pat.csv'
+CSV_FILE = '../pat.csv'
 last_modified = 0
 
 class CSVFileHandler(FileSystemEventHandler):
     def on_modified(self, event):
         global last_modified
-        if event.src_path.endswith('../../pat.csv'):
+        if event.src_path.endswith('../pat.csv'):
             current_modified = os.path.getmtime(CSV_FILE)
             if current_modified != last_modified:
                 last_modified = current_modified
