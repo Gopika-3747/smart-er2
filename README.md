@@ -45,7 +45,7 @@ A comprehensive, full-stack web application that leverages **Machine Learning** 
 - Performance metrics tracking
 - Exportable reports and data
 
-  ## Technology Stack
+## Technology Stack
 
 ### Frontend
 - **Next.js 15** - React framework with App Router
