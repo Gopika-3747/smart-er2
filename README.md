@@ -67,7 +67,7 @@ A comprehensive, full-stack web application that leverages **Machine Learning** 
 - **Matplotlib/Seaborn** - Data visualization
 - **Joblib** - Model serialization
   
-  ## Architecture
+## Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌──────────────────┐
